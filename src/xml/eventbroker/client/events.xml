@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<events>
+	<a>Some content</a>
+	<desert attr="hi" />
+	<c>
+		<desert />
+	</c>
+	<d />
+	<e />
+	<f />
+	<g />
+	<h />
+	<desert>Some more content</desert>
+	<a name="Something"><b>Inner Node</b></a>
+</events>
