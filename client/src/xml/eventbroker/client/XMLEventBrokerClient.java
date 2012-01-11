@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -21,6 +22,13 @@ import javax.xml.stream.events.XMLEvent;
 
 public class XMLEventBrokerClient {
 
+	static final Map<String, String> config;
+	
+	static {
+		config = ConfigLoader.getConfig(XMLEventBrokerClient.class.getResource("config.xml"));
+		
+	}
+	
 	static class SimpleEventWriter extends Thread {
 		final OutputStream stream;
 
@@ -58,7 +66,7 @@ public class XMLEventBrokerClient {
 		public void run() {
 
 			InputStream res = XMLEventBrokerClient.class
-					.getResourceAsStream("events.xml");
+					.getResourceAsStream( config.get("resource") );
 
 			ReadableByteChannel rbc = Channels.newChannel(res);
 			WritableByteChannel wbc = Channels.newChannel(stream);
@@ -197,7 +205,7 @@ public class XMLEventBrokerClient {
 		URL url;
 
 		try {
-			url = new URL("http://localhost:8080/servlet-web/XMLEventBroker");
+			url = new URL( config.get("url") );
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestMethod("POST");
 			con.setDoOutput(true);

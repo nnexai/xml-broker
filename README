@@ -1,1 +1,1 @@
-xml-broker -- a small java-servlet to distribute xml-events to registered web-services
+xml-broker -- a collection of some example projects to get started with programming the client, the broker and services that may register with the broker

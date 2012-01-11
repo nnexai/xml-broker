@@ -36,9 +36,8 @@ public class XMLEventBroker extends HttpServlet {
 		super.init();
 		pool = Executors.newCachedThreadPool();
 		regServ = new RegisteredServices();
-
-		regServ.registerService("desert",
-				"http://localhost:8080/servlet-web/XMLEventExample");
+		regServ.registerService(ConfigLoader.getConfig(XMLEventBroker.class
+				.getResource("config.xml")));
 	}
 
 	@Override

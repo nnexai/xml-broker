@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<url>http://localhost:8080/xml-broker/XMLEventBroker</url>
+	<resource>events.xml</resource>
+</config>

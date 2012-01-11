@@ -13,12 +13,18 @@ public class RegisteredServices {
 		return regServ.get(eventType);
 	}
 	
-	public void registerService(String eventType, String url) {
-		List<String> list = regServ.get(eventType);
+	public void registerService(Collection<? extends ServiceEntry> services) {
+		for (ServiceEntry entry : services) {
+			registerService(entry);
+		}
+	}
+	
+	public void registerService(ServiceEntry entry) {
+		List<String> list = regServ.get(entry.getEvent());
 		if(list == null) {
 			list = new LinkedList<String>();
-			regServ.put(eventType, list);
+			regServ.put(entry.getEvent(), list);
 		}
-		list.add(url);
+		list.add(entry.getUrl());
 	}
 }
