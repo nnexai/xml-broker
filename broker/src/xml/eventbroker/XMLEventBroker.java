@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -48,7 +49,7 @@ public class XMLEventBroker extends HttpServlet {
 			if (!pool.awaitTermination(4, TimeUnit.SECONDS))
 				pool.shutdownNow();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			logger.log(Level.WARNING, "Unable to shutdown Threadpool", e);
 		}
 
 	}
@@ -74,20 +75,17 @@ public class XMLEventBroker extends HttpServlet {
 		try {
 			in.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.log(Level.WARNING, "Could not close request-stream", e);
 		}
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		logger.info("POST");
-
 		final BufferedInputStream inStream = new BufferedInputStream(
 				req.getInputStream());
-
+		
 		processXML(inStream);
-		logger.info("FINISHED ALL TASKS");
 
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}

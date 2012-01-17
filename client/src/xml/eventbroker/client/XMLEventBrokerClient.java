@@ -26,7 +26,6 @@ public class XMLEventBrokerClient {
 	
 	static {
 		config = ConfigLoader.getConfig(XMLEventBrokerClient.class.getResource("config.xml"));
-		
 	}
 	
 	static class SimpleEventWriter extends Thread {

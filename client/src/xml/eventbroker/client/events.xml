@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <events>
-	<a>Some content</a>
-	<desert attr="hi" />
+	<a>Something</a>
+	<log attr="This should be logged" />
 	<c>
-		<desert />
+		<log />
 	</c>
 	<d />
 	<e />
 	<f />
 	<g />
 	<h />
-	<desert>Some more content</desert>
+	<log>Some more content that should be logged</log>
 	<a name="Something"><b>Inner Node</b></a>
 </events>

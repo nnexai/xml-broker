@@ -1,6 +1,8 @@
 package xml.eventbroker;
 
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -9,6 +11,8 @@ import javax.xml.stream.events.XMLEvent;
 
 public abstract class EventParser {
 
+	private static final Logger logger = Logger.getAnonymousLogger();
+	
 	public abstract void handleEvent(String eventType, String event);
 
 	public void parseStream(InputStream in) {
@@ -81,7 +85,7 @@ public abstract class EventParser {
 			}
 
 		} catch (XMLStreamException e) {
-			e.printStackTrace();
+			logger.log(Level.WARNING, "Exception during parsing of incoming XML-Event-Stream", e);
 		}
 	}
 

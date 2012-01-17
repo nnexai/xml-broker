@@ -3,10 +3,9 @@ package xml.eventbroker;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -17,6 +16,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class ConfigLoader {
+
+	private static final Logger logger = Logger.getAnonymousLogger();
 
 	static class GetConfigHandler extends DefaultHandler {
 		String currentEvent = null;
@@ -50,7 +51,6 @@ public class ConfigLoader {
 				throws SAXException {
 			currentValue = new String(ch, start, length);
 		}
-
 	}
 
 	static Collection<ServiceEntry> getConfig(URL configFile) {
@@ -61,11 +61,11 @@ public class ConfigLoader {
 			parser.parse(configFile.toString(), handler);
 			return handler.getServices();
 		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "Error configuring parser", e);
 		} catch (SAXException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "Error parsing configuration file", e);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "Error opening configuration file", e);
 		}
 		return null;
 	}

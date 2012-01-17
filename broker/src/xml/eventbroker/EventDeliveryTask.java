@@ -6,10 +6,12 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class EventDeliveryTask implements Runnable {
 
+	private static final Logger logger = Logger.getAnonymousLogger();
 
 	private final String event;
 	private final String url;
@@ -26,7 +28,7 @@ public class EventDeliveryTask implements Runnable {
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestMethod("POST");
 			con.setDoOutput(true);
-			con.setDoInput(false);
+			con.setDoInput(true);
 			con.setChunkedStreamingMode(-1);
 			con.setRequestProperty("Connection", "keep-alive");
 			con.setConnectTimeout(120 * 1000);
@@ -43,10 +45,11 @@ public class EventDeliveryTask implements Runnable {
 			con.getInputStream();
 			int rCode;
 			if( (rCode = con.getResponseCode()) != HttpURLConnection.HTTP_OK)
-				Logger.getAnonymousLogger().warning("Service answered: "+rCode);
-			
+				logger.warning("Service answered: "+rCode);
 		} catch (IOException e) {
+			logger.log(Level.WARNING, "Error during transmission of xml-events", e);
 		}
+			
 	}
 
 }
