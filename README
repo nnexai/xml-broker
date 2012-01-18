@@ -1,0 +1,10 @@
+Ein Eventfile sollte die folgende Form haben:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<events>
+  <a>Some content</a>
+  <b name="zweites Event" />
+  ...
+</events>
+
+Wenn nach einem Event gewartet werden soll: <wait time="1000" /> als "Event" einfügen. Zeit in Millisekunden angeben.
