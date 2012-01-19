@@ -1,6 +1,7 @@
 package xml.eventbroker;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.ParserConfigurationException;
 
 import xml.eventbroker.service.AbstractServiceEntry;
 
@@ -36,6 +38,7 @@ public class XMLEventBroker extends HttpServlet {
 
 	ExecutorService pool;
 	RegisteredServices regServ;
+	DynamicRegistration dynReg;
 
 	@Override
 	public void init() throws ServletException {
@@ -44,6 +47,11 @@ public class XMLEventBroker extends HttpServlet {
 		regServ = new RegisteredServices();
 		regServ.registerService(ConfigLoader.getConfig(XMLEventBroker.class
 				.getResource("config.xml")));
+		try {
+			dynReg = new DynamicRegistration(regServ);
+		} catch (ParserConfigurationException e) {
+			throw new ServletException(e);
+		}
 	}
 
 	@Override
@@ -87,6 +95,20 @@ public class XMLEventBroker extends HttpServlet {
 		final BufferedInputStream inStream = new BufferedInputStream(
 				req.getInputStream());		
 		processXML(inStream);
+		resp.setStatus(HttpServletResponse.SC_OK);
+	}
+	
+	@Override
+	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		dynReg.subscribe(req.getInputStream());
+		resp.setStatus(HttpServletResponse.SC_OK);
+	}
+	
+	@Override
+	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		dynReg.unsubscribe(req.getPathInfo());
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 }

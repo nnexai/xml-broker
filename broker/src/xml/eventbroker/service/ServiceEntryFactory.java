@@ -49,7 +49,7 @@ public class ServiceEntryFactory {
 	
 	public static AbstractServiceEntry getServiceEntry(String eventType, Element doc)
 			throws InstantiationException {
-		String className = doc.getLocalName();
+		String className = doc.getNodeName();
 		
 		if (!isClassName(className))
 			logException(new SecurityException("Given class-name is not a valid java-class-name."), doc);

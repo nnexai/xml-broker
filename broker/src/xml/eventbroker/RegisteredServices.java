@@ -8,10 +8,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.w3c.dom.Document;
+
 import xml.eventbroker.service.AbstractServiceEntry;
 
 public class RegisteredServices {
-	Map<String, List<AbstractServiceEntry>> regServ = new HashMap<String, List<AbstractServiceEntry>>();
+	private Map<String, List<AbstractServiceEntry>> regServ = new HashMap<String, List<AbstractServiceEntry>>();
 	private final List<AbstractServiceEntry> EMPTY = Collections.emptyList();
 
 	public Collection<AbstractServiceEntry> getServices(String eventType) {
@@ -37,6 +39,12 @@ public class RegisteredServices {
 				regServ.put(entry.getEvent(), list);
 			}
 			list.add(entry);
+		}
+	}
+
+	public void unsubscribe(String event, String id) {
+		synchronized (regServ) {
+			regServ.remove(event);
 		}
 	}
 }
