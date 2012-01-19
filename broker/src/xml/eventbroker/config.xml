@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-	<register event="log">http://localhost:8080/xml-broker-logging/XMLEventExample</register>
+	<register>
+		<SimpleHTTPService event="log" url='http://localhost:8080/xml-logging-app/XMLEventExample'/>
+		<XPathFilter event="test" path="//test[@id = 1]">
+			<SimpleHTTPService url='http://localhost:8080/xml-logging-app/XMLEventExample'/>
+		</XPathFilter>
+	</register>
 </config>

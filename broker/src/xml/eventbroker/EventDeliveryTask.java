@@ -1,51 +1,27 @@
 package xml.eventbroker;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import xml.eventbroker.service.AbstractServiceEntry;
 
 public class EventDeliveryTask implements Runnable {
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 
 	private final String event;
-	private final String url;
+	private final AbstractServiceEntry service;
 
-	public EventDeliveryTask(String url, String event) {
+	public EventDeliveryTask( String event, AbstractServiceEntry service) {
 		this.event = event;
-		this.url = url;
+		this.service = service;
 	}
 
 	@Override
 	public void run() {
 		try {
-			URL url = new URL(this.url);
-			HttpURLConnection con = (HttpURLConnection) url.openConnection();
-			con.setRequestMethod("POST");
-			con.setDoOutput(true);
-			con.setDoInput(true);
-			con.setChunkedStreamingMode(-1);
-			con.setRequestProperty("Connection", "keep-alive");
-			con.setConnectTimeout(120 * 1000);
-			con.setRequestProperty("Content-type", "text/xml");
-
-			OutputStream out = con.getOutputStream();
-			BufferedOutputStream bos = new BufferedOutputStream(out);
-			OutputStreamWriter writer = new OutputStreamWriter(bos, "UTF-8");
-			
-			writer.append(event);
-			writer.flush();
-			writer.close();
-			
-			con.getInputStream();
-			int rCode;
-			if( (rCode = con.getResponseCode()) != HttpURLConnection.HTTP_OK)
-				logger.warning("Service answered: "+rCode);
+			service.deliver(event);
 		} catch (IOException e) {
 			logger.log(Level.WARNING, "Error during transmission of xml-events", e);
 		}

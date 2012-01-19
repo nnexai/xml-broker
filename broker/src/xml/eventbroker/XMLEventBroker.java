@@ -3,7 +3,10 @@ package xml.eventbroker;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -14,6 +17,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import xml.eventbroker.service.AbstractServiceEntry;
 
 /**
  * Servlet implementation class FirstServlet
@@ -60,13 +65,10 @@ public class XMLEventBroker extends HttpServlet {
 			@Override
 			public void handleEvent(String eventType, String event) {
 
-				Collection<String> regS = regServ.getURL(eventType);
-				if (regS != null)
-					for (String url : regS) {
-						EventDeliveryTask task = new EventDeliveryTask(url,
-								event);
-						pool.execute(task);
-					}
+				for (AbstractServiceEntry service : regServ.getServices(eventType)) {
+					EventDeliveryTask task = new EventDeliveryTask(event, service);
+					pool.execute(task);
+				}
 			}
 		};
 
@@ -83,10 +85,8 @@ public class XMLEventBroker extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		final BufferedInputStream inStream = new BufferedInputStream(
-				req.getInputStream());
-		
+				req.getInputStream());		
 		processXML(inStream);
-
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 }

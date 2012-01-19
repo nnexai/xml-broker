@@ -2,14 +2,14 @@
 <events>
 	<a>Something</a>
 	<log attr="This should be logged" />
-	<c>
+	<test id="1">
 		<log />
-	</c>
+	</test>
+	<test id="3" />
+	<test id="1" />
+	<b />
+	<c />
 	<d />
-	<e />
-	<f />
-	<g />
-	<h />
 	<log>Some more content that should be logged</log>
 	<a name="Something"><b>Inner Node</b></a>
 </events>
