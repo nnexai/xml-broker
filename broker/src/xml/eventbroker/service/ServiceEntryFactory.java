@@ -22,6 +22,7 @@ import org.w3c.dom.Node;
 
 import xml.eventbroker.service.delivery.IHTTPDeliverer;
 import xml.eventbroker.service.delivery.PooledHTTPDeliverer;
+import xml.eventbroker.service.delivery.PooledStreamingHTTPDeliverer;
 import xml.eventbroker.service.delivery.SimpleHTTPDeliverer;
 
 public class ServiceEntryFactory implements IEventServiceFactory {
@@ -43,6 +44,9 @@ public class ServiceEntryFactory implements IEventServiceFactory {
 		d.init();		
 		m.put(d.getClass(), d);
 
+		d = new PooledStreamingHTTPDeliverer();
+		d.init();
+		m.put(d.getClass(), d);
 	}
 	
 	public void shutdown(){

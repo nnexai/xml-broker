@@ -3,6 +3,7 @@ package xml.eventbroker;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -127,6 +128,39 @@ public class XMLEventBroker extends HttpServlet {
 				req.getInputStream());
 		processXML(inStream);
 		resp.setStatus(HttpServletResponse.SC_OK);
+	}
+	
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		final PrintWriter writer = resp.getWriter();
+		writer.append("<html><body>");
+		writer.append("<table>");
+		writer.append("<tr><th>Event</th><th>ID</th><th>Service</th></tr>");
+		regServ.iterate(new IRegisteredServiceHandler() {
+			boolean first = true;
+			
+			@Override
+			public void handleService(String key, AbstractServiceEntry srvEntry) {
+				if(first){
+					first = false;
+				} else {
+					writer.append("<tr><td></td>");					
+				}
+				
+				writer.append("<td>"+srvEntry.getID()+"</td><td>"+srvEntry.getClass().getCanonicalName()+"</td></tr>");										
+			}
+			
+			@Override
+			public void handleEventType(String key) {
+				first = true;
+				writer.append("<tr><td>"+key+"</td>");
+			}
+		});
+		writer.append("</table>");
+		writer.append("</body></html>");
+		writer.close();
+		resp.setStatus(resp.SC_OK);
 	}
 
 	@Override

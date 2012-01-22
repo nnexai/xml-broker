@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import xml.eventbroker.service.AbstractServiceEntry;
 
@@ -15,6 +16,20 @@ public class RegisteredServices {
 	private Map<String, List<AbstractServiceEntry>> regServ = new HashMap<String, List<AbstractServiceEntry>>();
 	private final List<AbstractServiceEntry> EMPTY = Collections.emptyList();
 
+	public void iterate(final IRegisteredServiceHandler h) {
+		synchronized (regServ) {
+			for (Entry<String, List<AbstractServiceEntry>> entry : regServ.entrySet()) {
+				h.handleEventType(entry.getKey());
+				
+				for (AbstractServiceEntry srvEntry : entry.getValue()) {
+					h.handleService(entry.getKey(), srvEntry);
+				}
+				
+			}
+		}
+		
+	}
+	
 	public Collection<AbstractServiceEntry> getServices(String eventType) {
 		synchronized (regServ) {
 			List<AbstractServiceEntry> inMem = regServ.get(eventType);

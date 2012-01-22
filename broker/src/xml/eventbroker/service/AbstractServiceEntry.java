@@ -18,6 +18,10 @@ public abstract class AbstractServiceEntry {
 		return id;
 	}
 
+	/**
+	 * Test if this implementation of AbstractServiceEntry requires a DOM-Tree.
+	 * @return true, if deliver requires a DOM-Node. false, if a simple String representation if needed.
+	 */
 	public boolean requiresDOM() {
 		return false;
 	}
