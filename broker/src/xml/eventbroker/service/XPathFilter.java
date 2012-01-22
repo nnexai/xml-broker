@@ -1,7 +1,6 @@
 package xml.eventbroker.service;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.logging.Logger;
 
@@ -20,7 +19,6 @@ import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 public class XPathFilter extends AbstractServiceEntry {
 
@@ -30,27 +28,26 @@ public class XPathFilter extends AbstractServiceEntry {
 	private final AbstractServiceEntry service;
 	private final XPathExpression path;
 
-	public XPathFilter(String event, Element xml) throws InstantiationException {
-		super(event);
+	public XPathFilter(String event, String id, Element xml,
+			IEventServiceFactory fac) throws InstantiationException {
+		super(event, id);
 		try {
 			path = factory.newXPath().compile(xml.getAttribute("path"));
-			
-			//get first non-text element
+
+			// get first non-text element
 			Node item = null;
 			NodeList childNodes = xml.getChildNodes();
-			for(int i = 0; i < childNodes.getLength(); i++) {
+			for (int i = 0; i < childNodes.getLength(); i++) {
 				Node child = childNodes.item(i);
-				if(child.getNodeType() == Node.ELEMENT_NODE) {
+				if (child.getNodeType() == Node.ELEMENT_NODE) {
 					item = child;
 					break;
 				}
 			}
 
-			service = ServiceEntryFactory
-					.getServiceEntry(event, (Element) item);
-			
-			TransformerFactory transFactory = TransformerFactory
-					.newInstance();
+			service = fac.getServiceEntry(event, id, (Element) item);
+
+			TransformerFactory transFactory = TransformerFactory.newInstance();
 			transformer = transFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION,
 					"yes");
@@ -63,20 +60,29 @@ public class XPathFilter extends AbstractServiceEntry {
 	}
 
 	@Override
-	public void deliver(String eventBody) throws IOException {
+	public boolean requiresDOM() {
+		return true;
+	}
+
+	@Override
+	public void deliver(Object eventB) throws IOException {
 		Node result;
+
+		Node node = (Node) eventB;
 		try {
-			
-			//TODO: Better tell on registration if simple String or Dom representation is needed
-			result = (Node) path.evaluate(new InputSource(new StringReader(
-					eventBody)), XPathConstants.NODE);
+
+			result = (Node) path.evaluate(node, XPathConstants.NODE);
 
 			if (result != null) {
-				StringWriter buffer = new StringWriter();
-				transformer.transform(new DOMSource(result), new StreamResult(
-						buffer));
+				Object resultB = result;
+				if (!service.requiresDOM()) {
+					StringWriter buffer = new StringWriter();
+					transformer.transform(new DOMSource(result),
+							new StreamResult(buffer));
 
-				service.deliver(buffer.toString());
+					resultB = buffer.toString();
+				}
+				service.deliver(resultB);
 			}
 
 		} catch (XPathExpressionException e) {

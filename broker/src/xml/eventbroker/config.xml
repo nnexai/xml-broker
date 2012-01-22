@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
 	<register>
-		<SimpleHTTPService event="log" url='http://localhost:8080/xml-logging-app/XMLEventExample'/>
-		<XPathFilter event="test" path="//test[@id = 1]">
-			<SimpleHTTPService url='http://localhost:8080/xml-logging-app/XMLEventExample'/>
+		<HTTPService event="log" id="1" url='http://localhost:8080/xml-logging-app/XMLEventExample'/>
+		<HTTPService event="log" id="2" streaming="True" url='http://localhost:8080/xml-logging-app/XMLEventExample'/>
+		<XPathFilter event="test" id="1" path="//test[@id = 1]">
+			<HTTPService url='http://localhost:8080/xml-logging-app/XMLEventExample'/>
 		</XPathFilter>
 	</register>
 </config>

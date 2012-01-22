@@ -16,11 +16,14 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import xml.eventbroker.service.AbstractServiceEntry;
-import xml.eventbroker.service.ServiceEntryFactory;
+import xml.eventbroker.service.IEventServiceFactory;
 
 public class ConfigLoaderHandler extends DefaultHandler {
+	
 	private static final Logger logger = Logger.getAnonymousLogger();
 
+	private final IEventServiceFactory fac;
+	
 	Collection<AbstractServiceEntry> list = new LinkedList<AbstractServiceEntry>();
 
 	public Collection<AbstractServiceEntry> getServices() {
@@ -34,8 +37,9 @@ public class ConfigLoaderHandler extends DefaultHandler {
 	boolean inRegister = false;
 	int level = 0;
 
-	public ConfigLoaderHandler() throws ParserConfigurationException {
+	public ConfigLoaderHandler(IEventServiceFactory fac) throws ParserConfigurationException {
 		docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		this.fac = fac;
 	}
 
 	@Override
@@ -61,8 +65,7 @@ public class ConfigLoaderHandler extends DefaultHandler {
 
 	private void instantiate(Document serv) {
 		try {
-			AbstractServiceEntry srvEntry = ServiceEntryFactory
-					.getServiceEntry(serv.getDocumentElement());
+			AbstractServiceEntry srvEntry = fac.getServiceEntry(serv.getDocumentElement());
 			list.add(srvEntry);
 		} catch (InstantiationException e) {
 			logger.log(Level.WARNING,

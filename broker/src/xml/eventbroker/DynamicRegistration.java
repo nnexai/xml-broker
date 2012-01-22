@@ -13,7 +13,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import xml.eventbroker.service.AbstractServiceEntry;
-import xml.eventbroker.service.ServiceEntryFactory;
+import xml.eventbroker.service.IEventServiceFactory;
 
 public class DynamicRegistration {
 	
@@ -21,23 +21,24 @@ public class DynamicRegistration {
 	
 	private final RegisteredServices regServices;
 	private final DocumentBuilder _builder;
+	private final IEventServiceFactory fac;
 
-	public DynamicRegistration(RegisteredServices regServices)
+	public DynamicRegistration(RegisteredServices regServices, IEventServiceFactory fac)
 			throws ParserConfigurationException {
 		this.regServices = regServices;
-
+		this.fac = fac;
+		
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		_builder = factory.newDocumentBuilder();
 	}
 
-	public void subscribe(InputStream in) {
+	public boolean subscribe(InputStream in) {
 		logger.info("Registering one service");
 		try {
 			Document doc = _builder.parse(new InputSource(in));
 			logger.info(doc.getDocumentElement().toString());
-			AbstractServiceEntry serviceEntry = ServiceEntryFactory
-					.getServiceEntry(doc.getDocumentElement());
-			regServices.registerService(serviceEntry);
+			AbstractServiceEntry serviceEntry = fac.getServiceEntry(doc.getDocumentElement());
+			return regServices.registerService(serviceEntry);
 		} catch (SAXException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -45,19 +46,22 @@ public class DynamicRegistration {
 		} catch (InstantiationException e) {
 			e.printStackTrace();
 		}
+		return false;
 	}
 
-	public void unsubscribe(String path) {
+	public boolean unsubscribe(String path) {
+		
 		if(path != null) {
-			String[] split = path.split("/");
+			String[] split = path.split("/", 3);
 			
 			if(split.length == 3) {
 				String event = split[1];
 				String id = split[2];
 			
 				logger.info("Removing one service: "+event+"/"+id);
-				regServices.unsubscribe(event, id);
+				return regServices.unsubscribe(event, id);
 			}
 		}
+		return false;
 	}
 }

@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
@@ -33,7 +34,7 @@ public abstract class EventParser {
 
 				switch (r.getEventType()) {
 
-				case XMLEvent.START_ELEMENT:
+				case XMLStreamConstants.START_ELEMENT:
 					level++;
 
 					// store top-level event information
@@ -58,7 +59,7 @@ public abstract class EventParser {
 					}
 					break;
 
-				case XMLEvent.END_ELEMENT:
+				case XMLStreamConstants.END_ELEMENT:
 					level--;
 
 					if (level >= 1)
@@ -71,7 +72,7 @@ public abstract class EventParser {
 					}
 					break;
 
-				case XMLEvent.CHARACTERS:
+				case XMLStreamConstants.CHARACTERS:
 					if (level >= 2) {
 						int start = r.getTextStart();
 						int length = r.getTextLength();

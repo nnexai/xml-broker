@@ -10,10 +10,10 @@ public class EventDeliveryTask implements Runnable {
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 
-	private final String event;
+	private final Object event;
 	private final AbstractServiceEntry service;
 
-	public EventDeliveryTask( String event, AbstractServiceEntry service) {
+	public EventDeliveryTask( Object event, AbstractServiceEntry service) {
 		this.event = event;
 		this.service = service;
 	}

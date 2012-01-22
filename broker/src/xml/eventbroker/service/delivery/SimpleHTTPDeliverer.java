@@ -8,10 +8,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.logging.Logger;
 
-public class SimpleHTTPDeliverer {
+public class SimpleHTTPDeliverer implements IHTTPDeliverer {
 	private static final Logger logger = Logger.getAnonymousLogger();
 	
-	public static void deliver(String event, String urlString) throws IOException {
+	@Override
+	public void deliver(String event, String urlString) throws IOException {
 		URL url = new URL(urlString);
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("POST");
@@ -34,6 +35,14 @@ public class SimpleHTTPDeliverer {
 		int rCode;
 		if( (rCode = con.getResponseCode()) != HttpURLConnection.HTTP_OK)
 			logger.warning("Service answered: "+rCode);
+	}
+
+	@Override
+	public void init() {
+	}
+
+	@Override
+	public void shutdown() {		
 	}
 
 }

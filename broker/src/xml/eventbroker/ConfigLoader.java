@@ -13,16 +13,17 @@ import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.SAXException;
 
 import xml.eventbroker.service.AbstractServiceEntry;
+import xml.eventbroker.service.IEventServiceFactory;
 
 public class ConfigLoader {
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 
-	static Collection<AbstractServiceEntry> getConfig(URL configFile) {
+	static Collection<AbstractServiceEntry> getConfig(URL configFile, IEventServiceFactory fac) {
 		SAXParserFactory fact = SAXParserFactory.newInstance();
 		try {
 			SAXParser parser = fact.newSAXParser();
-			ConfigLoaderHandler handler = new ConfigLoaderHandler();
+			ConfigLoaderHandler handler = new ConfigLoaderHandler(fac);
 			parser.parse(configFile.toString(), handler);
 			return handler.getServices();
 		} catch (ParserConfigurationException e) {

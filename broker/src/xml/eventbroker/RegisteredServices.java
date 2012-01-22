@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.w3c.dom.Document;
 
 import xml.eventbroker.service.AbstractServiceEntry;
 
@@ -31,20 +30,39 @@ public class RegisteredServices {
 		}
 	}
 
-	public void registerService(AbstractServiceEntry entry) {
+	public boolean registerService(AbstractServiceEntry entry) {
 		synchronized (regServ) {
 			List<AbstractServiceEntry> list = regServ.get(entry.getEvent());
 			if (list == null) {
 				list = new LinkedList<AbstractServiceEntry>();
 				regServ.put(entry.getEvent(), list);
 			}
+			
+			for (AbstractServiceEntry lEntry : list) {
+				if (entry.getID().equals(lEntry.getID()))
+					return false;
+			}
+			
 			list.add(entry);
 		}
+		return true;
 	}
 
-	public void unsubscribe(String event, String id) {
+	public boolean unsubscribe(String event, String id) {
+		boolean found = false;
 		synchronized (regServ) {
-			regServ.remove(event);
+			List<AbstractServiceEntry> list = regServ.get(event);
+			if(list != null) {
+				for (Iterator<AbstractServiceEntry> iterator = list.iterator(); iterator.hasNext();) {
+					AbstractServiceEntry entry = iterator
+							.next();
+					if(entry.getID().equals(id)) {
+						iterator.remove();
+						found = true;
+					}
+				}
+			}
 		}
+		return found;
 	}
 }
