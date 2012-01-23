@@ -1,1 +1,16 @@
 xml-broker -- a small java-servlet to distribute xml-events to registered web-services
+
+--	HTTP-Streaming 
+	currently I am working on a way to stream events to endpoint services. This requires 
+	to hold on to a connection for as long as possible. Usually tomcat etc have a very strict
+	Connection timeout set. If you like to play around with streaming first increase the
+	respective setting for your servlet container. For a streaming connection to work, the
+	service should be able to recieve several xml-root-elements from the same stream. For the
+	logging-service a sample StreamFilter is implemented, that splits the stream into several
+	parts (this implementation should be redone properly to support comments, processing 
+	instructions and CDATA elements... but implementing a basic working xml-parser that knows
+	when a root-element ends is big task.. and since PIs and comments can stand in front and 
+	behind the root-element some restrictions have to be added...). Currently pooled streaming-
+	connections are not automatically closed. Management is left to the container issuing
+	timeouts etc.. still there is currently no way to find out if a connection timed out on
+	the endpoints side. Thus some events will be lost during reconnection!
