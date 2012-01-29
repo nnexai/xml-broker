@@ -12,8 +12,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import xml.eventbroker.service.AbstractServiceEntry;
-import xml.eventbroker.service.IEventServiceFactory;
+import xml.eventbroker.connector.AbstractServiceEntry;
+import xml.eventbroker.connector.IEventConnectorFactory;
 
 public class DynamicRegistration {
 	
@@ -21,9 +21,9 @@ public class DynamicRegistration {
 	
 	private final RegisteredServices regServices;
 	private final DocumentBuilder _builder;
-	private final IEventServiceFactory fac;
+	private final IEventConnectorFactory fac;
 
-	public DynamicRegistration(RegisteredServices regServices, IEventServiceFactory fac)
+	public DynamicRegistration(RegisteredServices regServices, IEventConnectorFactory fac)
 			throws ParserConfigurationException {
 		this.regServices = regServices;
 		this.fac = fac;
@@ -37,6 +37,12 @@ public class DynamicRegistration {
 		try {
 			Document doc = _builder.parse(new InputSource(in));
 			logger.info(doc.getDocumentElement().toString());
+			
+			/*
+			String id = doc.getDocumentElement().getAttribute("id");
+			String event = doc.getDocumentElement().getAttribute("event");
+			*/
+			
 			AbstractServiceEntry serviceEntry = fac.getServiceEntry(doc.getDocumentElement());
 			return regServices.registerService(serviceEntry);
 		} catch (SAXException e) {

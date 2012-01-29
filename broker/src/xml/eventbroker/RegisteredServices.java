@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import xml.eventbroker.service.AbstractServiceEntry;
+import xml.eventbroker.connector.AbstractServiceEntry;
 
 public class RegisteredServices {
 	private Map<String, List<AbstractServiceEntry>> regServ = new HashMap<String, List<AbstractServiceEntry>>();
@@ -76,6 +76,8 @@ public class RegisteredServices {
 						found = true;
 					}
 				}
+				if (list.isEmpty())
+					regServ.remove(event);
 			}
 		}
 		return found;

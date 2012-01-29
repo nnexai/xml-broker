@@ -1,10 +1,10 @@
-package xml.eventbroker.service;
+package xml.eventbroker.connector;
 
 import org.w3c.dom.Element;
 
-import xml.eventbroker.service.delivery.IHTTPDeliverer;
+import xml.eventbroker.connector.delivery.IHTTPDeliverer;
 
-public interface IEventServiceFactory {
+public interface IEventConnectorFactory {
 	public AbstractServiceEntry getServiceEntry(Element doc) throws InstantiationException;
 	
 	public AbstractServiceEntry getServiceEntry(String eventType, String id, Element doc)

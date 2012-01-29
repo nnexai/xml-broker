@@ -1,4 +1,4 @@
-package xml.eventbroker.service.delivery;
+package xml.eventbroker.connector.delivery;
 
 import java.io.IOException;
 

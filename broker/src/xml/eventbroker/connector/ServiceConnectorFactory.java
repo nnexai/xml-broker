@@ -1,4 +1,4 @@
-package xml.eventbroker.service;
+package xml.eventbroker.connector;
 
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
@@ -20,12 +20,12 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import xml.eventbroker.service.delivery.IHTTPDeliverer;
-import xml.eventbroker.service.delivery.PooledHTTPDeliverer;
-import xml.eventbroker.service.delivery.PooledStreamingHTTPDeliverer;
-import xml.eventbroker.service.delivery.SimpleHTTPDeliverer;
+import xml.eventbroker.connector.delivery.IHTTPDeliverer;
+import xml.eventbroker.connector.delivery.PooledHTTPDeliverer;
+import xml.eventbroker.connector.delivery.PooledStreamingHTTPDeliverer;
+import xml.eventbroker.connector.delivery.SimpleHTTPDeliverer;
 
-public class ServiceEntryFactory implements IEventServiceFactory {
+public class ServiceConnectorFactory implements IEventConnectorFactory {
 	private static final Logger logger = Logger.getAnonymousLogger();
 	
 	Map<Class<? extends IHTTPDeliverer>, IHTTPDeliverer> m;
@@ -90,17 +90,17 @@ public class ServiceEntryFactory implements IEventServiceFactory {
 		if (!isClassName(className))
 			logException(new SecurityException("Given class-name is not a valid java-class-name."), doc);
 		
-		className = ServiceEntryFactory.class.getPackage().getName()+'.'+className;
+		className = ServiceConnectorFactory.class.getPackage().getName()+'.'+className;
 		
 		AbstractServiceEntry entry = null;
 
 		try {
-			Class<?> clazz = ServiceEntryFactory.class.getClassLoader()
+			Class<?> clazz = ServiceConnectorFactory.class.getClassLoader()
 					.loadClass(className);
 			Class<? extends AbstractServiceEntry> loadClass = clazz
 					.asSubclass(AbstractServiceEntry.class);
 			Constructor<? extends AbstractServiceEntry> constructor;
-			constructor = loadClass.getConstructor(String.class, String.class, Element.class, IEventServiceFactory.class);
+			constructor = loadClass.getConstructor(String.class, String.class, Element.class, IEventConnectorFactory.class);
 			
 			if(eventType == null)
 				eventType = doc.getAttribute("event");

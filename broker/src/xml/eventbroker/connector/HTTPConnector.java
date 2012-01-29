@@ -1,19 +1,19 @@
-package xml.eventbroker.service;
+package xml.eventbroker.connector;
 
 import java.io.IOException;
 
 import org.w3c.dom.Element;
 
-import xml.eventbroker.service.delivery.IHTTPDeliverer;
-import xml.eventbroker.service.delivery.PooledHTTPDeliverer;
-import xml.eventbroker.service.delivery.PooledStreamingHTTPDeliverer;
-import xml.eventbroker.service.delivery.SimpleHTTPDeliverer;
+import xml.eventbroker.connector.delivery.IHTTPDeliverer;
+import xml.eventbroker.connector.delivery.PooledHTTPDeliverer;
+import xml.eventbroker.connector.delivery.PooledStreamingHTTPDeliverer;
+import xml.eventbroker.connector.delivery.SimpleHTTPDeliverer;
 
-public class HTTPService extends AbstractServiceEntry {
+public class HTTPConnector extends AbstractServiceEntry {
 	private final String url;
 	private final IHTTPDeliverer deliverer; 
 	
-	public HTTPService(String event, String id, String url, boolean streaming, IEventServiceFactory fac) {
+	public HTTPConnector(String event, String id, String url, boolean streaming, IEventConnectorFactory fac) {
 		super(event, id);
 		this.url = url;
 		
@@ -24,7 +24,7 @@ public class HTTPService extends AbstractServiceEntry {
 		this.deliverer = fac.getHTTPDeliverer(delivC);
 	}
 	
-	public HTTPService(String event, String id, Element xml, IEventServiceFactory fac) {
+	public HTTPConnector(String event, String id, Element xml, IEventConnectorFactory fac) {
 		this(event, id, xml.getAttribute("url"), "True".equals(xml.getAttribute("streaming")), fac);
 	}
 

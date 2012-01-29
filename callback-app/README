@@ -1,0 +1,25 @@
+xml-callback-app -- a small java-servlet that uses long-polling (via POST) to ensure a synchronous communication for clients.
+Should work as this:
+
+Request:
+Client sends:
+<calc>1+1</calc>
+
+Client --> callback-app ..> broker ..> service
+
+callback-app holds request and sends:
+<calc>1+1<callback id="123"></calc> (which is proxied by the broker to the service)
+
+Client ++> callback-app --> broker --> service
+
+Service answers:
+<callback id="123">2</callback>
+
+Client ++> callback-app <-- broker <-- service
+
+Callback-Serice returns the answer over the still open connection:
+Client ++> callback-app
+       <--/
+	   
+With this setup the broker may be used from outside a servlet..
+for example a website running ajax-requests on the client side could use the callback-service to get results for certain queries	   

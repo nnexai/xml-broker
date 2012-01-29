@@ -7,7 +7,7 @@
     <servlet-class>xml.eventbroker.eventsender.EventSender</servlet-class>
      <init-param>
         <param-name>xmlbroker</param-name>
-        <param-value>http://localhost:8080/xml-broker/XMLEventBroker</param-value>
+        <param-value>http://localhost:8080/broker/XMLEventBroker</param-value>
     </init-param> 
   </servlet>
   <servlet-mapping>

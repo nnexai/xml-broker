@@ -15,14 +15,14 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import xml.eventbroker.service.AbstractServiceEntry;
-import xml.eventbroker.service.IEventServiceFactory;
+import xml.eventbroker.connector.AbstractServiceEntry;
+import xml.eventbroker.connector.IEventConnectorFactory;
 
 public class ConfigLoaderHandler extends DefaultHandler {
 	
 	private static final Logger logger = Logger.getAnonymousLogger();
 
-	private final IEventServiceFactory fac;
+	private final IEventConnectorFactory fac;
 	
 	Collection<AbstractServiceEntry> list = new LinkedList<AbstractServiceEntry>();
 
@@ -37,7 +37,7 @@ public class ConfigLoaderHandler extends DefaultHandler {
 	boolean inRegister = false;
 	int level = 0;
 
-	public ConfigLoaderHandler(IEventServiceFactory fac) throws ParserConfigurationException {
+	public ConfigLoaderHandler(IEventConnectorFactory fac) throws ParserConfigurationException {
 		docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		this.fac = fac;
 	}

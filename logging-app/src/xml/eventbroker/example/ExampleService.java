@@ -3,6 +3,7 @@ package xml.eventbroker.example;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.net.SocketException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -10,11 +11,9 @@ import java.util.logging.Logger;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -59,10 +58,8 @@ public class ExampleService extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		AsyncContext async = req.startAsync();
-		HttpSession session =  req.getSession( true );
 		logger.info("Setting session timeout");
-		session.setMaxInactiveInterval(60*60*1000);
-		async.setTimeout(60*60*1000);
+		async.setTimeout(20*1000);
 		Thread t = new ProcessingThread(async);
 		t.start();
 				
@@ -109,14 +106,17 @@ public class ExampleService extends HttpServlet {
 				if(r == -2)
 					break;
 			}
+
+			logger.info("Connection was closed by remote");
+			cxt.complete();
+		} catch (SocketException e) {
+			logger.log(Level.WARNING, "Connection timed out", e);			
 		} catch (IOException e) {
 			logger.log(Level.WARNING, "Connection timed out", e);
 		} finally {
 			reader.close();
 		}
 		
-		logger.info("Connection was closed");
-		cxt.complete();
 	}
 	}
 }

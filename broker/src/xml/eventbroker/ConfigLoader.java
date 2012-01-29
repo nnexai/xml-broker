@@ -12,14 +12,14 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.SAXException;
 
-import xml.eventbroker.service.AbstractServiceEntry;
-import xml.eventbroker.service.IEventServiceFactory;
+import xml.eventbroker.connector.AbstractServiceEntry;
+import xml.eventbroker.connector.IEventConnectorFactory;
 
 public class ConfigLoader {
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 
-	static Collection<AbstractServiceEntry> getConfig(URL configFile, IEventServiceFactory fac) {
+	static Collection<AbstractServiceEntry> getConfig(URL configFile, IEventConnectorFactory fac) {
 		SAXParserFactory fact = SAXParserFactory.newInstance();
 		try {
 			SAXParser parser = fact.newSAXParser();

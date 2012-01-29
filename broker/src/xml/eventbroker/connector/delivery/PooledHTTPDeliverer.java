@@ -1,4 +1,4 @@
-package xml.eventbroker.service.delivery;
+package xml.eventbroker.connector.delivery;
 
 import java.io.IOException;
 
@@ -54,7 +54,6 @@ public class PooledHTTPDeliverer implements IHTTPDeliverer {
 	@Override
 	public void deliver(String event, String urlString) throws IOException {
 		HttpPost httpPost = new HttpPost(urlString);
-		
 		HttpEntity entity = new StringEntity(event);
 		httpPost.setEntity(entity);
 		byte[] response = httpClient.execute(httpPost, h);

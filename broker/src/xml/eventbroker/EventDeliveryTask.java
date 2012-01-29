@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import xml.eventbroker.service.AbstractServiceEntry;
+import xml.eventbroker.connector.AbstractServiceEntry;
 
 public class EventDeliveryTask implements Runnable {
 

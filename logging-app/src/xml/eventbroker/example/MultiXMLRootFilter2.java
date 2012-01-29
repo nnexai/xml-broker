@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
-public class MultiXMLRootFilter extends FilterReader {
+public class MultiXMLRootFilter2 extends FilterReader {
 	static enum ParserStatus {
 		PARSING, ATTRIBUTE, QUOTE, OPENING_NODE, CLOSING_NODE,
 		
@@ -24,7 +24,7 @@ public class MultiXMLRootFilter extends FilterReader {
 
 	ParserStatus status = ParserStatus.PARSING;
 
-	protected MultiXMLRootFilter(Reader in, int buffer) {
+	protected MultiXMLRootFilter2(Reader in, int buffer) {
 		super(in);
 		this.buf = new char[buffer];
 	}
@@ -40,11 +40,9 @@ public class MultiXMLRootFilter extends FilterReader {
 		int r;
 
 		if (pendingBytes > 0) {
-			// some Bytes pending from last batch --> use them 
 			r = pendingBytes;
 			pendingBytes = 0;
 		} else {
-			// nothing pending so read some new
 			r = super.read(buf, 0, len);
 			if (r == -1)
 				return -2;
@@ -56,75 +54,71 @@ public class MultiXMLRootFilter extends FilterReader {
 
 		int i;
 		for (i = pendingOffset; (i < r + pendingOffset) & (pendingBytes == 0); i++) {
-			parse(r, i);
-		}
+			char c = buf[i];
 
-
-		r -= pendingBytes;
-		
-		System.out.println("Returning: " + r
-				+ " from internal offset: " + pendingOffset
-				+ " -- Remaining: " + pendingBytes);
-		if (pendingBytes > 0) {	
-			pendingOffset += i;
-		} 
-
-		System.arraycopy(buf, pendingOffset, cbuf, off, r);
-		return r;
-	}
-
-	private void stop(int r, int i) {
-		pendingBytes = r - i - 1;
-		stop = true;
-	}
-
-	private void parse(int r, int i) {
-		final char c = buf[i];
-
-		if (status.equals(ParserStatus.OPENING_NODE)) {
-			if (c == '/') {
-				// if we found '</' at the beginning of a node good =)
-				level--;
-				status = ParserStatus.CLOSING_NODE;
-			} else {
-				level++;
-				status = ParserStatus.ATTRIBUTE;
-			}
-		}
-
-		switch (c) {
-		case '/':
-			if (status.equals(ParserStatus.ATTRIBUTE)) {
-				// if we found '<... /' outside quotes we have a shortened
-				// node
-				level--;
-				status = ParserStatus.CLOSING_NODE;
-			}
-			break;
-		case '<':
-			if (status.equals(ParserStatus.PARSING))
-				status = ParserStatus.OPENING_NODE;
-			break;
-		case '>':
-			if (!status.equals(ParserStatus.QUOTE)) {
-				if (status.equals(ParserStatus.CLOSING_NODE) & (level == 0)) {
-					stop(r, i);
+			if (status.equals(ParserStatus.OPENING_NODE)) {
+				if (c == '/') {
+					// if we found '</' at the beginning of a node good =)
+					level--;
+					status = ParserStatus.CLOSING_NODE;
+				} else {
+					level++;
+					status = ParserStatus.ATTRIBUTE;
 				}
-
-				status = ParserStatus.PARSING;
 			}
-			break;
-		case '\'':
-		case '"':
-			if (status.equals(ParserStatus.ATTRIBUTE))
-				status = ParserStatus.QUOTE;
-			else if (status.equals(ParserStatus.QUOTE))
-				status = ParserStatus.ATTRIBUTE;
-			break;
 
-		default:
-			break;
+			switch (c) {
+			case '/':
+				if (status.equals(ParserStatus.ATTRIBUTE)) {
+					// if we found '<... /' outside quotes we have a shortened
+					// node
+					level--;
+					status = ParserStatus.CLOSING_NODE;
+				}
+				break;
+			case '<':
+				if (status.equals(ParserStatus.PARSING))
+					status = ParserStatus.OPENING_NODE;
+				break;
+			case '>':
+				if (!status.equals(ParserStatus.QUOTE)) {
+					if (status.equals(ParserStatus.CLOSING_NODE) & (level == 0)) {
+						pendingBytes = r - i - 1;
+						stop = true;
+					}
+
+					status = ParserStatus.PARSING;
+				}
+				break;
+			case '\'':
+			case '"':
+				if (status.equals(ParserStatus.ATTRIBUTE))
+					status = ParserStatus.QUOTE;
+				else if (status.equals(ParserStatus.QUOTE))
+					status = ParserStatus.ATTRIBUTE;
+				break;
+
+			default:
+				break;
+			}
+
 		}
+
+		if (pendingBytes > 0) {
+			int byteCount = r - pendingBytes;
+			System.out.println("Returning: " + byteCount
+					+ " from internal offset: " + pendingOffset
+					+ " -- Remaining: " + pendingBytes);
+			System.arraycopy(buf, pendingOffset, cbuf, off, byteCount);
+			pendingOffset += i;
+			return byteCount;
+		} else {
+			System.out.println("Returning: " + r + " from internal offset: "
+					+ pendingOffset);
+			System.arraycopy(buf, pendingOffset, cbuf, off, r);
+			return r;
+		}
+
 	}
 
 	public static void main(String[] args) {
@@ -138,8 +132,8 @@ public class MultiXMLRootFilter extends FilterReader {
 		 * Reader in = new MultiXMLRootFilter(new StringReader(
 		 * "<a attr=\"hallo\">\"this is a test\"</a> <a/>"), 0x10);
 		 */
-		Reader in = new MultiXMLRootFilter(new StringReader(
-				"<log attr=\"This should be logged\"></log>      "), 0x10);
+		Reader in = new MultiXMLRootFilter2(new StringReader(
+				"<log attr=\"This should be logged\"></log>"), 0x10);
 
 		try {
 			while (true) {

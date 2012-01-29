@@ -1,4 +1,4 @@
-package xml.eventbroker.service;
+package xml.eventbroker.connector;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -29,7 +29,7 @@ public class XPathFilter extends AbstractServiceEntry {
 	private final XPathExpression path;
 
 	public XPathFilter(String event, String id, Element xml,
-			IEventServiceFactory fac) throws InstantiationException {
+			IEventConnectorFactory fac) throws InstantiationException {
 		super(event, id);
 		try {
 			path = factory.newXPath().compile(xml.getAttribute("path"));

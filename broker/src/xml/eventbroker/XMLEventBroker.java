@@ -21,8 +21,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import xml.eventbroker.service.AbstractServiceEntry;
-import xml.eventbroker.service.ServiceEntryFactory;
+import xml.eventbroker.connector.AbstractServiceEntry;
+import xml.eventbroker.connector.ServiceConnectorFactory;
 
 /**
  * Servlet implementation class XMLEventBroker
@@ -43,14 +43,14 @@ public class XMLEventBroker extends HttpServlet {
 	DynamicRegistration dynReg;
 	DocumentBuilder docBuilder;
 
-	ServiceEntryFactory factory;
+	ServiceConnectorFactory factory;
 
 	@Override
 	public void init() throws ServletException {
 		super.init();
 		pool = Executors.newCachedThreadPool();
 
-		factory = new ServiceEntryFactory();
+		factory = new ServiceConnectorFactory();
 		factory.init();
 
 		regServ = new RegisteredServices();
