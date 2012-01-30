@@ -94,4 +94,8 @@ public class XPathFilter extends AbstractServiceEntry {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return path.toString()+" > "+service;
+	}
 }

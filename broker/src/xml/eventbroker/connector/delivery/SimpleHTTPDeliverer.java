@@ -45,4 +45,8 @@ public class SimpleHTTPDeliverer implements IHTTPDeliverer {
 	public void shutdown() {		
 	}
 
+	@Override
+	public String toString() {
+		return "[http-request]";
+	}
 }

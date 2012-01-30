@@ -8,7 +8,6 @@ import javax.servlet.ServletResponse;
 
 public class HttpPollingContext {
 
-	public long index;
 	private final AsyncContext ctx;
 
 	public HttpPollingContext(AsyncContext ctx) {
@@ -16,10 +15,13 @@ public class HttpPollingContext {
 	}
 	
 	public void answer(String answer) throws IOException {
+		System.out.println("Will answer: "+answer);
 		ServletResponse response = ctx.getResponse();
+		response.setContentLength(answer.length());
 		PrintWriter wrt = response.getWriter();
 		wrt.append(answer);
 		wrt.close();
+		ctx.complete();
 	} 
 
 }

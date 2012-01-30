@@ -122,4 +122,9 @@ public class PooledStreamingHTTPDeliverer implements IHTTPDeliverer {
 		}
 		con.pushEvent(event);
 	}
+	
+	@Override
+	public String toString() {
+		return "[http-request-stream]";
+	}
 }

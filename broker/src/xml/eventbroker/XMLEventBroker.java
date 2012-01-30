@@ -148,7 +148,7 @@ public class XMLEventBroker extends HttpServlet {
 					writer.append("<tr><td></td>");					
 				}
 				
-				writer.append("<td>"+srvEntry.getID()+"</td><td>"+srvEntry.getClass().getCanonicalName()+"</td></tr>");										
+				writer.append("<td>"+srvEntry.getID()+"</td><td>"+srvEntry+"</td></tr>");										
 			}
 			
 			@Override

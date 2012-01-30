@@ -10,8 +10,10 @@ import java.util.logging.Logger;
 import sun.net.www.protocol.http.HttpURLConnection;
 
 public class StreamingConnectionTest {
+	private static final String MSG2 = "<test>2</test>";
+	private static final String MSG1 = "<test>1</test>";
 	private static Logger logger = Logger.getAnonymousLogger();
-
+	
 	public static void main(String[] args) {
 		
 		HttpURLConnection con;
@@ -19,13 +21,13 @@ public class StreamingConnectionTest {
 		URL url;
 		
 		try {
-			url = new URL("http://localhost:8080/xml-logging-app/XMLEventExample");
+			url = new URL("http://localhost:8080/logging-app/XMLEventExample");
 		con = (HttpURLConnection) url.openConnection();
 
 		con.setRequestMethod("POST");
 		con.setDoOutput(true);
 		con.setDoInput(true);
-		con.setChunkedStreamingMode(-1);
+		con.setFixedLengthStreamingMode(MSG1.length()+MSG2.length());
 		con.setUseCaches(false);
 		con.setRequestProperty("Connection", "keep-alive");
 		// logging service should be set to timeout after ~20 seconds.. 
@@ -37,7 +39,7 @@ public class StreamingConnectionTest {
 		writer = new OutputStreamWriter(bos, "UTF-8");
 		
 		try {
-			writer.append("<test>1</test>");
+			writer.append(MSG1);
 			writer.flush();
 			out.flush();
 		} catch (IOException e) {
@@ -47,7 +49,7 @@ public class StreamingConnectionTest {
 		Thread.sleep(30*1000);
 		
 		try {
-			writer.append("<test>2</test>");
+			writer.append(MSG2);
 			writer.flush();
 			out.flush();
 			logger.log(Level.SEVERE, "The connection should have just timed out!");
@@ -55,6 +57,7 @@ public class StreamingConnectionTest {
 			logger.log(Level.INFO, "This is normal", e);
 		} 
 		
+		out.close();
 		System.out.println(con.getResponseMessage());
 		
 		} catch (MalformedURLException e) {

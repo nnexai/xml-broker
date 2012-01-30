@@ -9,7 +9,7 @@ public class MultiXMLRootFilter extends FilterReader {
 	private static final boolean DEBUG = false;
 
 	static enum ParserStatus {
-		PARSING, ERROR, CONSUME_ROOT_ELEMENT, TAG_OPEN, COMMENT_INTRO_1, COMMENT_INTRO_2, COMMENT, COMMENT_OUTRO_1, COMMENT_OUTRO_2, INSTRUCTION, INSTRUCTION_OUTRO, ELEMENT, ATTRIB_VALUE, ELEMENT_CLOSING, ELEMENT_SINGLE_TAG,
+		PARSING, ERROR, TAG_OPEN, COMMENT_INTRO_1, COMMENT_INTRO_2, COMMENT, COMMENT_OUTRO_1, COMMENT_OUTRO_2, INSTRUCTION, INSTRUCTION_OUTRO, ELEMENT, ATTRIB_VALUE, ELEMENT_CLOSING, ELEMENT_SINGLE_TAG,
 	}
 
 	private char[] buf;
@@ -31,7 +31,7 @@ public class MultiXMLRootFilter extends FilterReader {
 	public boolean hasFinished() {
 		return finished;
 	}
-
+	
 	/**
 	 * Often the class using this Stream tries to close it, after EOF has been
 	 * reached. Since this class fakes EOF on each XML-Boundary we need to hold
@@ -43,6 +43,13 @@ public class MultiXMLRootFilter extends FilterReader {
 			System.out.println("Someone tried to close the stream!");
 	}
 
+	@Override
+	public boolean ready() throws IOException {
+		if(pendingBytes>0)
+			return true;
+		return super.ready();
+	}
+	
 	/**
 	 * Closes the underlying stream.
 	 * 
@@ -131,21 +138,6 @@ public class MultiXMLRootFilter extends FilterReader {
 		switch (status) {
 
 		case ERROR:
-			break;
-
-		// try to get around case where the root-element is followed by
-		// whitespace.
-		// do not want to split the last part so that we get a part containing
-		// only whitespace
-		// since this will lead to a parse-exception in SAX etc! Thats why we
-		// take all whitespace
-		// following a root-element as belonging to it.
-		case CONSUME_ROOT_ELEMENT:
-			if (c == '<') {
-				stop(r, i - 1);
-				status = ParserStatus.TAG_OPEN;
-			} else if (!Character.isSpaceChar(c))
-				status = ParserStatus.ERROR;
 			break;
 
 		case PARSING:
@@ -240,14 +232,16 @@ public class MultiXMLRootFilter extends FilterReader {
 		case ELEMENT_CLOSING:
 			if (c == '>') {
 				level--;
-				status = level == 0 ? ParserStatus.CONSUME_ROOT_ELEMENT
-						: ParserStatus.PARSING;
+				if (level == 0)
+					stop(r, i);
+				status = ParserStatus.PARSING;
 			}
 
 		case ELEMENT_SINGLE_TAG:
 			if (c == '>') {
-				status = level == 0 ? ParserStatus.CONSUME_ROOT_ELEMENT
-						: ParserStatus.PARSING;
+				if (level == 0) 
+					stop(r, i);
+				status = ParserStatus.PARSING;
 			}
 		}
 

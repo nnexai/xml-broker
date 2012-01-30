@@ -33,4 +33,8 @@ public class HTTPConnector extends AbstractServiceEntry {
 		deliverer.deliver((String)eventBody, url);
 	}
 
+	@Override
+	public String toString() {
+		return url.toString()+" > "+deliverer;
+	}
 }

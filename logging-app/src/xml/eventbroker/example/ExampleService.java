@@ -90,21 +90,23 @@ public class ExampleService extends HttpServlet {
 			MultiXMLRootFilter filter = new MultiXMLRootFilter(reader, 0x100);
 			try {
 
-				while (filter.hasFinished()) {
+				while (!filter.hasFinished()) {
 					int r;
-					StringBuilder b = new StringBuilder(0x100);
+					StringBuilder b = new StringBuilder(0x1000);
 					char[] buf = new char[0x100];
 
-					while ((r = reader.read(buf)) >= 0) {
+					while ((r = filter.read(buf)) >= 0) {
 						b.append(buf, 0, r);
 					}
+					System.err.println("<--- EVENT!! --->");
 
 					synchronized (events) {
 						logger.info("Added event " + b.toString());
 						events.add(b.toString());
 					}
 				}
-
+				filter.forceClose();
+				
 				logger.info("Connection was closed by remote");
 				cxt.complete();
 			} catch (SocketException e) {

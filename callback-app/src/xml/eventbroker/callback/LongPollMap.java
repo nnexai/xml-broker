@@ -3,8 +3,11 @@ package xml.eventbroker.callback;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class LongPollMap {
+	private static final Logger logger = Logger.getAnonymousLogger();
+	
 	long currentIndex = -1;
 	
 	private final Map<Long, HttpPollingContext> map;
@@ -17,7 +20,6 @@ public class LongPollMap {
 		synchronized (map) {
 			map.put(Long.valueOf(++currentIndex), ctx);
 		}
-		ctx.index = currentIndex;
 		return currentIndex;
 	}
 	
@@ -28,5 +30,8 @@ public class LongPollMap {
 		}
 		if(ctx != null)
 			ctx.answer(answer);
+		else
+			logger.warning("Recieved answer for non-existing connection!");
+			
 	} 
 }
