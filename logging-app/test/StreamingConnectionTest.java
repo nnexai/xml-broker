@@ -28,6 +28,7 @@ public class StreamingConnectionTest {
 		con.setChunkedStreamingMode(-1);
 		con.setUseCaches(false);
 		con.setRequestProperty("Connection", "keep-alive");
+		// logging service should be set to timeout after ~20 seconds.. 
 		con.setConnectTimeout(60 * 60 * 1000); // ONE-Hour
 		con.setRequestProperty("Content-type", "text/xml");
 		

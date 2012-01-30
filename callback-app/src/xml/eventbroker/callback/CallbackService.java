@@ -102,7 +102,7 @@ public class CallbackService extends HttpServlet {
 		try {
 			
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			while(!filtered.isFinished()) {				
+			while(!filtered.hasFinished()) {				
 				try {
 					StringWriter sw = new StringWriter(0x100);
 

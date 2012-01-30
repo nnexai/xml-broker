@@ -59,64 +59,62 @@ public class ExampleService extends HttpServlet {
 			throws ServletException, IOException {
 		AsyncContext async = req.startAsync();
 		logger.info("Setting session timeout");
-		async.setTimeout(20*1000);
+		async.setTimeout(20 * 1000);
 		Thread t = new ProcessingThread(async);
 		t.start();
-				
+
 	}
 
 	class ProcessingThread extends Thread {
-	
+
 		private final AsyncContext cxt;
-		
+
 		public ProcessingThread(AsyncContext cxt) {
 			this.cxt = cxt;
 		}
-		
+
 		@Override
-			public void run() {
-				
-				try {
-					readXMLEvents(cxt.getRequest().getReader());
-				} catch (IOException e) {
-					logger.log(Level.WARNING, "Error getting or closing Request-Reader", e);
-					cxt.complete();
-				}
-			
+		public void run() {
+
+			try {
+				readXMLEvents(cxt.getRequest().getReader());
+			} catch (IOException e) {
+				logger.log(Level.WARNING,
+						"Error getting or closing Request-Reader", e);
+				cxt.complete();
 			}
+
+		}
 
 		private void readXMLEvents(Reader reader) throws IOException {
-		reader = new MultiXMLRootFilter(reader, 0x100);
-		try {
+			MultiXMLRootFilter filter = new MultiXMLRootFilter(reader, 0x100);
+			try {
 
-			while(true) {
-				int r;
-				StringBuilder b  = new StringBuilder(0x100);
-				char[] buf = new char[0x100];
-								
-				while( (r = reader.read(buf)) > 0 ) {
-					b.append(buf, 0, r);
+				while (filter.hasFinished()) {
+					int r;
+					StringBuilder b = new StringBuilder(0x100);
+					char[] buf = new char[0x100];
+
+					while ((r = reader.read(buf)) >= 0) {
+						b.append(buf, 0, r);
+					}
+
+					synchronized (events) {
+						logger.info("Added event " + b.toString());
+						events.add(b.toString());
+					}
 				}
-				
-				synchronized (events) {
-					logger.info("Added event "+b.toString());
-					events.add(b.toString());
-				}
-				
-				if(r == -2)
-					break;
+
+				logger.info("Connection was closed by remote");
+				cxt.complete();
+			} catch (SocketException e) {
+				logger.log(Level.WARNING, "Connection timed out", e);
+			} catch (IOException e) {
+				logger.log(Level.WARNING, "Connection timed out", e);
+			} finally {
+				reader.close();
 			}
 
-			logger.info("Connection was closed by remote");
-			cxt.complete();
-		} catch (SocketException e) {
-			logger.log(Level.WARNING, "Connection timed out", e);			
-		} catch (IOException e) {
-			logger.log(Level.WARNING, "Connection timed out", e);
-		} finally {
-			reader.close();
 		}
-		
-	}
 	}
 }
