@@ -39,7 +39,8 @@ public class MultiXMLRootFilter extends FilterReader {
 	 */
 	@Override
 	public void close() throws IOException {
-		System.out.println("Someone tried to close the stream!");
+		if (DEBUG)
+			System.out.println("Someone tried to close the stream!");
 	}
 
 	/**
