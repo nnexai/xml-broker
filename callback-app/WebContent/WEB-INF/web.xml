@@ -4,9 +4,24 @@
       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
       version="3.0"> 
   <display-name>callback-servlet-app</display-name>
+    <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
   <session-config>
   	<session-timeout>60</session-timeout>
   </session-config>
+  <servlet>
+    <description></description>
+    <display-name>XMLSimpleReplyService</display-name>
+    <servlet-name>SimpleReply</servlet-name>
+    <servlet-class>xml.eventbroker.example.SimpleReplyService</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>SimpleReply</servlet-name>
+    <url-pattern>/SimpleReply</url-pattern>
+  </servlet-mapping>
   <servlet>
     <description></description>
     <display-name>XMLCallback</display-name>
@@ -17,5 +32,16 @@
   <servlet-mapping>
     <servlet-name>XMLCallback</servlet-name>
     <url-pattern>/XMLCallback</url-pattern>
+  </servlet-mapping>
+    <servlet>
+    <description></description>
+    <display-name>XMLJythonReply</display-name>
+    <servlet-name>JythonReply</servlet-name>
+    <servlet-class>xml.eventbroker.example.JythonReplyService</servlet-class>
+    <async-supported>true</async-supported>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>JythonReply</servlet-name>
+    <url-pattern>/JythonReply</url-pattern>
   </servlet-mapping>
 </web-app>

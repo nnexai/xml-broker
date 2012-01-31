@@ -23,7 +23,7 @@ public class MultiXMLRootFilter extends FilterReader {
 
 	private ParserStatus status = ParserStatus.PARSING;
 
-	protected MultiXMLRootFilter(Reader in, int buffer) {
+	public MultiXMLRootFilter(Reader in, int buffer) {
 		super(in);
 		this.buf = new char[buffer];
 	}
@@ -78,12 +78,7 @@ public class MultiXMLRootFilter extends FilterReader {
 			pendingBytes = 0;
 		} else {
 			// nothing pending so read some new
-			try {
-				r = super.read(buf, 0, len);
-			} catch (Exception e) {
-				e.printStackTrace();
-				r = -1;
-			}
+			r = super.read(buf, 0, len);
 
 			if (r < 0) {
 				this.finished = true;
