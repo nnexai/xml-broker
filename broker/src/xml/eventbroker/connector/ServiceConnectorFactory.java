@@ -78,12 +78,12 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 	}
 	
 	@Override
-	public AbstractServiceEntry getServiceEntry(Element doc) throws InstantiationException {
-		return getServiceEntry(null, null, doc);
+	public AbstractServiceEntry getServiceEntry(Element doc, String uri) throws InstantiationException {
+		return getServiceEntry(null, uri, doc);
 	}
 	
 	@Override
-	public AbstractServiceEntry getServiceEntry(String eventType, String id, Element doc)
+	public AbstractServiceEntry getServiceEntry(String eventType, String uri, Element doc)
 			throws InstantiationException {
 		String className = doc.getNodeName();
 		
@@ -104,10 +104,8 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 			
 			if(eventType == null)
 				eventType = doc.getAttribute("event");
-			if(id == null)
-				id = doc.getAttribute("id");
 			
-			entry = constructor.newInstance(eventType, id, doc, this);
+			entry = constructor.newInstance(eventType, uri, doc, this);
 
 		} catch (NoSuchMethodException e) {
 			logException(e, doc);

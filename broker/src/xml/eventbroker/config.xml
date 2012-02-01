@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
 	<register>
-		<HTTPConnector event="test" id="1" url='http://localhost:8080/logging-app/XMLEventExample'/>
-		<HTTPConnector event="request" id="1" url='http://localhost:8080/logging-app/XMLEventExample'/>
-		<HTTPConnector event="callback" id="1" url='http://localhost:8080/logging-app/XMLEventExample'/>
-		<HTTPConnector event="callback" id="2" url='http://localhost:8080/callback-app/XMLCallback'/>
-		<HTTPConnector event="request" id="3" url='http://localhost:8080/callback-app/SimpleReply'/>
-		<HTTPConnector event="jython" id="4" url='http://localhost:8080/callback-app/JythonReply'/>
-		<HTTPConnector event="jython" id="1" url='http://localhost:8080/logging-app/XMLEventExample'/>
+		<HTTPConnector event="test" uri="log/test" url='http://localhost:8080/logging-app/XMLEventExample'/>
+		<HTTPConnector event="request" uri="log/request" url='http://localhost:8080/logging-app/XMLEventExample'/>
+		<HTTPConnector event="callback" uri="log/callback" url='http://localhost:8080/logging-app/XMLEventExample'/>
+		<HTTPConnector event="callback" uri="callback" url='http://localhost:8080/callback-app/XMLCallback'/>
+		<HTTPConnector event="request" uri="echo/request" url='http://localhost:8080/callback-app/SimpleReply'/>
+		<HTTPConnector event="jython" uri="evaluate/jython" url='http://localhost:8080/callback-app/JythonReply'/>
+		<HTTPConnector event="jython" uri="log/jython" url='http://localhost:8080/logging-app/XMLEventExample'/>
 		<!-- <XPathFilter event="test" id="1" path="//test[@id = 1]">
 			<HTTPConnector url='http://localhost:8080/xml-logging-app/XMLEventExample'/>
 		</XPathFilter> -->

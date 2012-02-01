@@ -136,7 +136,7 @@ public class XMLEventBroker extends HttpServlet {
 		final PrintWriter writer = resp.getWriter();
 		writer.append("<html><body>");
 		writer.append("<table>");
-		writer.append("<tr><th>Event</th><th>ID</th><th>Service</th></tr>");
+		writer.append("<tr><th>Event</th><th>URI</th><th>Service</th></tr>");
 		regServ.iterate(new IRegisteredServiceHandler() {
 			boolean first = true;
 			
@@ -148,7 +148,7 @@ public class XMLEventBroker extends HttpServlet {
 					writer.append("<tr><td></td>");					
 				}
 				
-				writer.append("<td>"+srvEntry.getID()+"</td><td>"+srvEntry+"</td></tr>");										
+				writer.append("<td>"+srvEntry.getURI()+"</td><td>"+srvEntry+"</td></tr>");										
 			}
 			
 			@Override
@@ -166,7 +166,7 @@ public class XMLEventBroker extends HttpServlet {
 	@Override
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		boolean success = dynReg.subscribe(req.getInputStream());
+		boolean success = dynReg.subscribe(req.getInputStream(), req.getPathInfo());
 		resp.setStatus(success ? HttpServletResponse.SC_OK
 				: HttpServletResponse.SC_NOT_ACCEPTABLE);
 	}

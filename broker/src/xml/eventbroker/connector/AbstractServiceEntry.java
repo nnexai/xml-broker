@@ -14,7 +14,7 @@ public abstract class AbstractServiceEntry {
 		return event;
 	}
 	
-	public String getID() {
+	public String getURI() {
 		return id;
 	}
 

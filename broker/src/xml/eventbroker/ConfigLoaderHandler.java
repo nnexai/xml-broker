@@ -10,6 +10,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -65,7 +66,8 @@ public class ConfigLoaderHandler extends DefaultHandler {
 
 	private void instantiate(Document serv) {
 		try {
-			AbstractServiceEntry srvEntry = fac.getServiceEntry(serv.getDocumentElement());
+			Element ele = serv.getDocumentElement();
+			AbstractServiceEntry srvEntry = fac.getServiceEntry(ele, ele.getAttribute("uri"));
 			list.add(srvEntry);
 		} catch (InstantiationException e) {
 			logger.log(Level.WARNING,
