@@ -3,11 +3,11 @@ package xml.eventbroker.connector;
 import java.io.IOException;
 
 public abstract class AbstractServiceEntry {
-	private final String event, id;
+	private final String event, uri;
 	
-	public AbstractServiceEntry(String event, String id) {
+	public AbstractServiceEntry(String event, String uri) {
 		this.event = event;
-		this.id = id;
+		this.uri = uri;
 	}
 
 	public String getEvent() {
@@ -15,7 +15,7 @@ public abstract class AbstractServiceEntry {
 	}
 	
 	public String getURI() {
-		return id;
+		return uri;
 	}
 
 	/**

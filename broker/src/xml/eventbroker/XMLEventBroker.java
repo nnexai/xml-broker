@@ -22,6 +22,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import xml.eventbroker.connector.AbstractServiceEntry;
+import xml.eventbroker.connector.DOMEventDescription;
 import xml.eventbroker.connector.ServiceConnectorFactory;
 
 /**
@@ -79,7 +80,7 @@ public class XMLEventBroker extends HttpServlet {
 		factory.shutdown();
 
 	}
-
+	
 	private void processXML(final InputStream in) {
 
 		EventParser evP = new EventParser() {
@@ -87,7 +88,7 @@ public class XMLEventBroker extends HttpServlet {
 			@Override
 			public void handleEvent(String eventType, String event) {
 
-				Document doc = null;
+				DOMEventDescription domdescr = null;
 
 				for (AbstractServiceEntry service : regServ
 						.getServices(eventType)) {
@@ -95,11 +96,12 @@ public class XMLEventBroker extends HttpServlet {
 
 					try {
 						if (service.requiresDOM()) {
-							if (doc == null) {
-								doc = docBuilder.newDocument();
+							if (domdescr == null) {
+								Document doc = docBuilder.newDocument();
 								SAX2DomHandler.generateDOM(event, doc);
+								domdescr = new DOMEventDescription(doc, event);
 							}
-							ev = doc;
+							ev = domdescr;
 						}
 
 						EventDeliveryTask task = new EventDeliveryTask(ev,

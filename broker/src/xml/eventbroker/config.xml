@@ -8,8 +8,8 @@
 		<HTTPConnector event="request" uri="echo/request" url='http://localhost:8080/callback-app/SimpleReply'/>
 		<HTTPConnector event="jython" uri="evaluate/jython" url='http://localhost:8080/callback-app/JythonReply'/>
 		<HTTPConnector event="jython" uri="log/jython" url='http://localhost:8080/logging-app/XMLEventExample'/>
-		<!-- <XPathFilter event="test" id="1" path="//test[@id = 1]">
-			<HTTPConnector url='http://localhost:8080/xml-logging-app/XMLEventExample'/>
-		</XPathFilter> -->
+		<XPathFilter event="test" uri="log/filtered/test" filter="@id = 1">
+			<HTTPConnector url='http://localhost:8080/logging-app/XMLEventExample'/>
+		</XPathFilter>
 	</register>
 </config>

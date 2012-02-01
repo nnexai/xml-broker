@@ -13,8 +13,8 @@ public class HTTPConnector extends AbstractServiceEntry {
 	private final String url;
 	private final IHTTPDeliverer deliverer; 
 	
-	public HTTPConnector(String event, String id, String url, boolean streaming, IEventConnectorFactory fac) {
-		super(event, id);
+	public HTTPConnector(String event, String uri, String url, boolean streaming, IEventConnectorFactory fac) {
+		super(event, uri);
 		this.url = url;
 		
 		//TODO: maybe put this responsibility inside the factory?.. getPooledDeliverer, getDeliverer etc.? 
@@ -24,8 +24,8 @@ public class HTTPConnector extends AbstractServiceEntry {
 		this.deliverer = fac.getHTTPDeliverer(delivC);
 	}
 	
-	public HTTPConnector(String event, String id, Element xml, IEventConnectorFactory fac) {
-		this(event, id, xml.getAttribute("url"), "True".equals(xml.getAttribute("streaming")), fac);
+	public HTTPConnector(String event, String uri, Element xml, IEventConnectorFactory fac) {
+		this(event, uri, xml.getAttribute("url"), "True".equals(xml.getAttribute("streaming")), fac);
 	}
 
 	@Override

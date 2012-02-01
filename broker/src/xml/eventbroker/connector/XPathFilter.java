@@ -1,16 +1,11 @@
 package xml.eventbroker.connector;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.util.logging.Logger;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
@@ -22,17 +17,20 @@ import org.w3c.dom.NodeList;
 
 public class XPathFilter extends AbstractServiceEntry {
 
-	private static final Logger logger = Logger.getAnonymousLogger();
 	private static final XPathFactory factory = XPathFactory.newInstance();
 	private final Transformer transformer;
 	private final AbstractServiceEntry service;
 	private final XPathExpression path;
+	private final String pathString;
 
-	public XPathFilter(String event, String id, Element xml,
+	public XPathFilter(String event, String uri, Element xml,
 			IEventConnectorFactory fac) throws InstantiationException {
-		super(event, id);
+		super(event, uri);
 		try {
-			path = factory.newXPath().compile(xml.getAttribute("path"));
+			StringBuilder str = new StringBuilder();
+			str.append('/').append(event).append('[').append(xml.getAttribute("filter")).append(']');
+			this.pathString = str.toString();
+			path = factory.newXPath().compile(pathString);
 
 			// get first non-text element
 			Node item = null;
@@ -45,7 +43,7 @@ public class XPathFilter extends AbstractServiceEntry {
 				}
 			}
 
-			service = fac.getServiceEntry(event, id, (Element) item);
+			service = fac.getServiceEntry(event, uri, (Element) item);
 
 			TransformerFactory transFactory = TransformerFactory.newInstance();
 			transformer = transFactory.newTransformer();
@@ -68,34 +66,31 @@ public class XPathFilter extends AbstractServiceEntry {
 	public void deliver(Object eventB) throws IOException {
 		Node result;
 
-		Node node = (Node) eventB;
+		DOMEventDescription descr = (DOMEventDescription) eventB;
+		Node node = descr.doc;
+		String eventStr = descr.eventString;
 		try {
 
 			result = (Node) path.evaluate(node, XPathConstants.NODE);
 
+			System.out.println("Got: "+eventStr+" will evaluate "+pathString);
+			System.out.println("Result: "+result);
+			
 			if (result != null) {
 				Object resultB = result;
 				if (!service.requiresDOM()) {
-					StringWriter buffer = new StringWriter();
-					transformer.transform(new DOMSource(result),
-							new StreamResult(buffer));
-
-					resultB = buffer.toString();
+					resultB = eventStr;
 				}
 				service.deliver(resultB);
 			}
 
 		} catch (XPathExpressionException e) {
 			throw new IOException(e);
-		} catch (TransformerConfigurationException e) {
-			throw new IOException(e);
-		} catch (TransformerException e) {
-			throw new IOException(e);
 		}
 	}
 
 	@Override
 	public String toString() {
-		return path.toString()+" > "+service;
+		return pathString+" > "+service;
 	}
 }
