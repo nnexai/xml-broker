@@ -55,7 +55,8 @@ public class CallbackService extends HttpServlet {
 		factory.setValidating(false);
 
 		try {
-			t = TransformerFactory.newInstance().newTransformer();			
+			t = TransformerFactory.newInstance().newTransformer();
+			// t.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, "jython");
 			t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 		} catch (TransformerConfigurationException e) {
 			e.printStackTrace();

@@ -19,6 +19,8 @@ public abstract class EventParser {
 	public void parseStream(InputStream in) {
 
 		XMLInputFactory f = XMLInputFactory.newInstance();
+		f.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
+		
 		XMLStreamReader r;
 
 		try {
@@ -30,9 +32,7 @@ public abstract class EventParser {
 			StringBuilder event = new StringBuilder(0x1000);
 
 			while (r.hasNext()) {
-				r.next();
-
-				switch (r.getEventType()) {
+				switch (r.next()) {
 
 				case XMLStreamConstants.START_ELEMENT:
 					level++;
@@ -72,6 +72,10 @@ public abstract class EventParser {
 					}
 					break;
 
+				case XMLStreamConstants.CDATA:
+					logger.warning("CDATA-FOUND!!");
+					break;
+					
 				case XMLStreamConstants.CHARACTERS:
 					if (level >= 2) {
 						int start = r.getTextStart();
@@ -80,8 +84,8 @@ public abstract class EventParser {
 								length);
 						event.append(text);
 					}
-				default:
 					break;
+				default:
 				}
 			}
 

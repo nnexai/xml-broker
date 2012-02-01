@@ -9,7 +9,7 @@ public class MultiXMLRootFilter extends FilterReader {
 	private static final boolean DEBUG = false;
 
 	static enum ParserStatus {
-		PARSING, ERROR, TAG_OPEN, COMMENT_INTRO_1, COMMENT_INTRO_2, COMMENT, COMMENT_OUTRO_1, COMMENT_OUTRO_2, INSTRUCTION, INSTRUCTION_OUTRO, ELEMENT, ATTRIB_VALUE, ELEMENT_CLOSING, ELEMENT_SINGLE_TAG,
+		PARSING, ERROR, TAG_OPEN, COMMENT_INTRO_1, COMMENT_INTRO_2, COMMENT, COMMENT_OUTRO_1, COMMENT_OUTRO_2, INSTRUCTION, INSTRUCTION_OUTRO, ELEMENT, ATTRIB_VALUE_DOUBLE_QUOTE, ELEMENT_CLOSING, ELEMENT_SINGLE_TAG, CDATA_INTRO_1, CDATA, CDATA_OUTRO_2, CDATA_OUTRO_1, ATTRIB_VALUE_SINGLE_QUOTE,
 	}
 
 	private char[] buf;
@@ -160,10 +160,16 @@ public class MultiXMLRootFilter extends FilterReader {
 			break;
 
 		case COMMENT_INTRO_1:
-			if (c == '-')
+			switch (c) {
+			case '-':
 				status = ParserStatus.COMMENT_INTRO_2;
-			else
+				break;
+			case '[':
+				status = ParserStatus.CDATA_INTRO_1;
+				break;
+			default:
 				status = ParserStatus.ERROR;
+			}
 			break;
 
 		case COMMENT_INTRO_2:
@@ -192,6 +198,40 @@ public class MultiXMLRootFilter extends FilterReader {
 				status = ParserStatus.COMMENT;
 			break;
 
+		case CDATA_INTRO_1:
+			switch (c) {
+			case 'C':
+			case 'D':
+			case 'A':
+			case 'T':
+				break;
+			case '[':
+				status = ParserStatus.CDATA;				
+			default:
+				status = ParserStatus.ERROR;
+			}
+			break;
+
+		case CDATA:
+			if (c == ']' )
+				status = ParserStatus.CDATA_OUTRO_1;
+			break;
+
+		case CDATA_OUTRO_1:
+			if (c == ']' )
+				status = ParserStatus.CDATA_OUTRO_2;
+			else
+				status = ParserStatus.CDATA;
+			break;
+
+		case CDATA_OUTRO_2:
+			if (c == '>' )
+				status = ParserStatus.PARSING;
+			else
+				status = ParserStatus.CDATA;
+			break;
+
+			
 		case INSTRUCTION:
 			if (c == '?')
 				status = ParserStatus.INSTRUCTION_OUTRO;
@@ -214,14 +254,20 @@ public class MultiXMLRootFilter extends FilterReader {
 				status = ParserStatus.ELEMENT_SINGLE_TAG;
 				break;
 			case '\'':
+				status = ParserStatus.ATTRIB_VALUE_SINGLE_QUOTE;
+				break;
 			case '\"':
-				status = ParserStatus.ATTRIB_VALUE;
+				status = ParserStatus.ATTRIB_VALUE_DOUBLE_QUOTE;
 				break;
 			}
 			break;
 
-		case ATTRIB_VALUE:
-			if (c == '\'' | c == '\"')
+		case ATTRIB_VALUE_DOUBLE_QUOTE:
+			if (c == '\"')
+				status = ParserStatus.ELEMENT;
+			
+		case ATTRIB_VALUE_SINGLE_QUOTE:
+			if (c == '\'')
 				status = ParserStatus.ELEMENT;
 
 		case ELEMENT_CLOSING:
