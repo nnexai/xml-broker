@@ -1,0 +1,1 @@
+xml-brokerlogging-app -- a small java-servlet that echos all given XML-Events (POST) on request (GET)

@@ -11,5 +11,4 @@
     <servlet-name>XMLEventBroker</servlet-name>
     <url-pattern>/XMLEventBroker/*</url-pattern>
   </servlet-mapping>
-
 </web-app>

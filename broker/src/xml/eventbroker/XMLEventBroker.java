@@ -80,14 +80,13 @@ public class XMLEventBroker extends HttpServlet {
 		factory.shutdown();
 
 	}
-	
+
 	private void processXML(final InputStream in) {
 
 		EventParser evP = new EventParser() {
 
 			@Override
 			public void handleEvent(String eventType, String event) {
-
 				DOMEventDescription domdescr = null;
 
 				for (AbstractServiceEntry service : regServ
@@ -131,7 +130,7 @@ public class XMLEventBroker extends HttpServlet {
 		processXML(inStream);
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
-	
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -141,34 +140,36 @@ public class XMLEventBroker extends HttpServlet {
 		writer.append("<tr><th>Event</th><th>URI</th><th>Service</th></tr>");
 		regServ.iterate(new IRegisteredServiceHandler() {
 			boolean first = true;
-			
+
 			@Override
 			public void handleService(String key, AbstractServiceEntry srvEntry) {
-				if(first){
+				if (first) {
 					first = false;
 				} else {
-					writer.append("<tr><td></td>");					
+					writer.append("<tr><td></td>");
 				}
-				
-				writer.append("<td>"+srvEntry.getURI()+"</td><td>"+srvEntry+"</td></tr>");										
+
+				writer.append("<td>" + srvEntry.getURI() + "</td><td>"
+						+ srvEntry + "</td></tr>");
 			}
-			
+
 			@Override
 			public void handleEventType(String key) {
 				first = true;
-				writer.append("<tr><td>"+key+"</td>");
+				writer.append("<tr><td>" + key + "</td>");
 			}
 		});
 		writer.append("</table>");
 		writer.append("</body></html>");
 		writer.close();
-		resp.setStatus(resp.SC_OK);
+		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 
 	@Override
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		boolean success = dynReg.subscribe(req.getInputStream(), req.getPathInfo());
+		boolean success = dynReg.subscribe(req.getInputStream(),
+				req.getPathInfo());
 		resp.setStatus(success ? HttpServletResponse.SC_OK
 				: HttpServletResponse.SC_NOT_ACCEPTABLE);
 	}

@@ -26,7 +26,6 @@ public class RegisteredServices {
 				for (AbstractServiceEntry srvEntry : entry.getValue()) {
 					h.handleService(entry.getKey(), srvEntry);
 				}
-				
 			}
 		}
 	}
