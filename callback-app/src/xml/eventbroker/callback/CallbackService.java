@@ -38,6 +38,8 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import xml.eventbroker.shared.MultiXMLRootFilter;
+
 public class CallbackService extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;

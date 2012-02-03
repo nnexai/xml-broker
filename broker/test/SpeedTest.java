@@ -70,7 +70,6 @@ public class SpeedTest {
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
 	}

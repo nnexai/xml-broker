@@ -38,7 +38,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import xml.eventbroker.callback.MultiXMLRootFilter;
+import xml.eventbroker.shared.MultiXMLRootFilter;
 
 public class JythonReplyService extends HttpServlet {
 

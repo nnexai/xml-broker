@@ -1,1 +1,3 @@
-xml-brokerlogging-app -- a small java-servlet that echos all given XML-Events (POST) on request (GET)
+xml-speed-statistics-app -- a small java-servlet that exspects events marked with a send-time attribute. 
+
+It compares the "creation-time" of these events with the current system-time and generates a nice little graphic + some statistics. Useful for testing the brokers speed

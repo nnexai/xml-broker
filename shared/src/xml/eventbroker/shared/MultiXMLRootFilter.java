@@ -1,4 +1,4 @@
-package xml.eventbroker.example;
+package xml.eventbroker.shared;
 
 import java.io.FilterReader;
 import java.io.IOException;
@@ -78,7 +78,12 @@ public class MultiXMLRootFilter extends FilterReader {
 			pendingBytes = 0;
 		} else {
 			// nothing pending so read some new
-			r = super.read(buf, 0, len);
+			try {
+				r = super.read(buf, 0, len);
+			} catch (IOException e) {
+				this.finished = true;
+				throw e;
+			}
 
 			if (r < 0) {
 				this.finished = true;

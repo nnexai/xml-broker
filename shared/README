@@ -1,0 +1,5 @@
+xml-shared -- A library containing all shared classes of the xml-broker "framework".
+
+Currently only the MultiXMLRootFilter is contained.
+- this class acts as a buffer + a filter that will split an incoming stream of xml-events into several documents 
+  (containing only a single root) 

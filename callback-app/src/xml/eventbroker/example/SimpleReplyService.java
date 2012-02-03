@@ -9,13 +9,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -35,12 +31,10 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.tomcat.util.DomUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import xml.eventbroker.callback.LongPollMap;
-import xml.eventbroker.callback.MultiXMLRootFilter;
+import xml.eventbroker.shared.MultiXMLRootFilter;
 
 public class SimpleReplyService extends HttpServlet {
 

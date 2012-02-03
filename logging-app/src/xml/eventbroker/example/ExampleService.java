@@ -17,6 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import xml.eventbroker.shared.MultiXMLRootFilter;
+
 public class ExampleService extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;

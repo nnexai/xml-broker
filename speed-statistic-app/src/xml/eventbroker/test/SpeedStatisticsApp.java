@@ -19,6 +19,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import xml.eventbroker.shared.MultiXMLRootFilter;
+
 public class SpeedStatisticsApp extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
