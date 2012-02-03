@@ -4,8 +4,9 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 public class EventTestStream extends InputStream {
-	private final boolean sleep;
-	
+	private static final int WAIT_PER_X_EVENTS = 100;
+	private final long waitTime;
+
 	private byte[] currentEvent;
 	private int currentEventOffset;
 
@@ -13,36 +14,51 @@ public class EventTestStream extends InputStream {
 	private int noOfEvents = 0;
 
 	public EventTestStream(int noOfEvents) {
-		this(noOfEvents, false);
+		this(noOfEvents, Integer.MAX_VALUE);
 	}
-	
-	public EventTestStream(int noOfEvents, boolean sleep) {
+
+	public EventTestStream(int noOfEvents, int throughput) {
 		this.noOfEvents = noOfEvents;
-		this.sleep = sleep;
+		
+		if(throughput > 0 )
+			waitTime = 1000 * WAIT_PER_X_EVENTS / throughput;
+		else
+			waitTime = 0;
+
 	}
-	
-	
 
 	StringBuilder strB = new StringBuilder(50);
+	long lastTime;
 
 	private boolean generateEvent() throws UnsupportedEncodingException {
+		if (currentEventNo == 0)
+			lastTime = System.nanoTime();
+		else if (waitTime > 0 && currentEventNo % WAIT_PER_X_EVENTS == 0) {
+			long timeDiffinMs = (System.nanoTime() - lastTime) / 1000000;
+			long timeToWait = waitTime - timeDiffinMs;
+
+			if (timeToWait > 0)
+				try {
+					Thread.sleep(timeToWait);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			else
+				System.out.println("Could not achieve throughput -- ");
+
+			lastTime = System.nanoTime();
+		}
 		if (currentEventNo > noOfEvents)
 			return false;
 
 		if (currentEvent != null && currentEventOffset < currentEvent.length)
 			return true;
 
-		if(sleep && currentEventNo % 100 == 0)
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		
-		if(currentEventNo % Math.max(noOfEvents/100,1) == 0) {
-			System.out.println((100.*currentEventNo/noOfEvents)+"% ["+currentEventNo+"]");
+		if (currentEventNo % Math.max(noOfEvents / 100, 1) == 0) {
+			System.out.println((100. * currentEventNo / noOfEvents) + "% ["
+					+ currentEventNo + "]");
 		}
-		
+
 		String str;
 
 		if (currentEventNo == -1) {

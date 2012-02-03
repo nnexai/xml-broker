@@ -10,14 +10,14 @@
 <title>Insert title here</title>
 </head>
 <body>
-<embed src="SpeedStatistics/statistics.svg" width="300" height="220" type="image/svg+xml" pluginspage="http://www.adobe.com/svg/viewer/install/" />
+<embed src="SpeedStatistics/statistics.svg" width="430" height="270" type="image/svg+xml" pluginspage="http://www.adobe.com/svg/viewer/install/" />
 <% Statistics statistics = (Statistics)request.getAttribute("statistic");
    List<JoinedDataPoint> list = statistics.getReduced(100); %>
 Recieved: <%= statistics.l.size() %>
-<table><tr><th>no</th><th>avg</th><th>min</th><th>max</th><th>#data</th></tr>
+<table><tr><th>no</th><th>avg</th><th>median</th><th>min</th><th>max</th><th>#samples</th></tr>
 <% for (int i = 0; i < list.size(); i++) { 
 	JoinedDataPoint p = list.get(i);%>
-<tr><td><%=i%></td><td><%=p.avg%></td><td><%=p.min%></td><td><%=p.max%></td><td><%=p.count%></td></tr>
+<tr><td><%=i+1%></td><td><%=p.avg%></td><td><%=p.median%></td><td><%=p.min%></td><td><%=p.max%></td><td><%=p.count%></td></tr>
 <%}%>
 </table>
 </body>

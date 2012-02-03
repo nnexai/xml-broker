@@ -41,7 +41,7 @@ public class SpeedTest {
 			sc.nextLine();
 			
 			long start = System.nanoTime();
-			pM.invoke(broker, new EventTestStream(0x10000, true));
+			pM.invoke(broker, new EventTestStream(0x1000, 1200));
 			System.out.println("Time for parsing the events at the brokers side: "+((System.nanoTime()-start)/1000000)+"ms");
 			
 			Field poolF = clazz.getDeclaredField("pool");
