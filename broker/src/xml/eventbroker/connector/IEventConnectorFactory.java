@@ -10,5 +10,5 @@ public interface IEventConnectorFactory {
 	public AbstractServiceEntry getServiceEntry(String eventType, String uri, Element doc)
 			throws InstantiationException;
 	
-	public IHTTPDeliverer getHTTPDeliverer(Class<? extends IHTTPDeliverer> clazz);
+	public IHTTPDeliverer getHTTPDeliverer(String type);
 }

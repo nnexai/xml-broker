@@ -20,13 +20,14 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import xml.eventbroker.shared.MultiXMLRootFilter;
+import xml.eventbroker.test.Statistics.DataPoint;
 
 public class SpeedStatisticsApp extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getAnonymousLogger();
 
-	List<Long> events;
+	List<DataPoint> events;
 	XMLInputFactory f;
 
 	@Override
@@ -35,7 +36,7 @@ public class SpeedStatisticsApp extends HttpServlet {
 		f = XMLInputFactory.newInstance();
 		f.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
 
-		events = new LinkedList<Long>();
+		events = new LinkedList<DataPoint>();
 	}
 	
 	boolean changed = true;
@@ -44,7 +45,7 @@ public class SpeedStatisticsApp extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-
+		
 		if(changed)
 			synchronized (events) {
 				statistics = new Statistics(events);	
@@ -57,12 +58,18 @@ public class SpeedStatisticsApp extends HttpServlet {
 
 		if (paths != null && paths.length == 2
 				&& "statistics.svg".equals(paths[1])) {
-
 			req.setAttribute("statistic", statistics);
 			javax.servlet.RequestDispatcher rd = this.getServletContext()
 					.getRequestDispatcher("/time_diff_line.jsp");
 			rd.forward(req, resp);
-
+			
+		} else if (paths != null && paths.length == 2
+				&& "out_of_order.svg".equals(paths[1])) {
+			req.setAttribute("statistic", statistics);
+			javax.servlet.RequestDispatcher rd = this.getServletContext()
+					.getRequestDispatcher("/out_of_order_line.jsp");
+			rd.forward(req, resp);
+			
 		} else if (paths == null || paths.length == 1) {
 			req.setAttribute("statistic", statistics);
 			javax.servlet.RequestDispatcher rd = this.getServletContext()
@@ -72,16 +79,16 @@ public class SpeedStatisticsApp extends HttpServlet {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 	}
 
-	private void registerEvent(long timeDiff) {
+	private void registerEvent(long timeDiff, int id) {
 		synchronized (events) {
 			changed = true;
-			events.add(Long.valueOf(timeDiff));
+			events.add(new DataPoint(Long.valueOf(timeDiff), id));
 		}
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+			throws ServletException, IOException {		
 		readXMLEvents(req.getReader());
 	}
 
@@ -91,6 +98,7 @@ public class SpeedStatisticsApp extends HttpServlet {
 		r = f.createXMLStreamReader(in);
 
 		long timeDiff;
+		int id;
 		int level = 0;
 
 		while (r.hasNext()) {
@@ -101,7 +109,10 @@ public class SpeedStatisticsApp extends HttpServlet {
 					String tStr = r.getAttributeValue(null, "send-time");
 					// store diff in milliseconds
 					timeDiff = (System.nanoTime() - Long.valueOf(tStr)) / 1000000;
-					registerEvent(timeDiff);
+					
+					tStr = r.getAttributeValue(null, "id");
+					id = Integer.valueOf(tStr);
+					registerEvent(timeDiff, id);
 				}
 				level++;
 				break;

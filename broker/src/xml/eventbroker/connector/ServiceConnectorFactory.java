@@ -20,78 +20,96 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import xml.eventbroker.connector.delivery.HotpotatoHTTPDeliverer;
 import xml.eventbroker.connector.delivery.IHTTPDeliverer;
 import xml.eventbroker.connector.delivery.PooledHTTPDeliverer;
-import xml.eventbroker.connector.delivery.PooledStreamingHTTPDeliverer;
+import xml.eventbroker.connector.delivery.StreamingHTTPDeliverer;
 import xml.eventbroker.connector.delivery.SimpleHTTPDeliverer;
 
 public class ServiceConnectorFactory implements IEventConnectorFactory {
 	private static final Logger logger = Logger.getAnonymousLogger();
-	
-	Map<Class<? extends IHTTPDeliverer>, IHTTPDeliverer> m;
-	
+
+	Map<String, IHTTPDeliverer> m;
+
 	public void init() {
-		m = new HashMap<Class<? extends IHTTPDeliverer>, IHTTPDeliverer>();
-		
+		m = new HashMap<String, IHTTPDeliverer>();
+
 		IHTTPDeliverer d;
 
-		//TODO: Find solution for hardcoding these entries (and their "get" counterpart"
+		// TODO: Find solution for hardcoding these entries (and their "get"
+		// counterpart"
 		d = new PooledHTTPDeliverer();
-		d.init();		
-		m.put(d.getClass(), d);
+		d.init();
+		m.put(d.getClass().getSimpleName(), d);
 
 		d = new SimpleHTTPDeliverer();
-		d.init();		
-		m.put(d.getClass(), d);
-
-		d = new PooledStreamingHTTPDeliverer();
 		d.init();
-		m.put(d.getClass(), d);
+		m.put(d.getClass().getSimpleName(), d);
+
+		d = new StreamingHTTPDeliverer();
+		d.init();
+		m.put(d.getClass().getSimpleName(), d);
+		
+		d = new HotpotatoHTTPDeliverer();
+		d.init();
+		m.put(d.getClass().getSimpleName(), d);
+		
 	}
-	
-	public void shutdown(){
+
+	public void shutdown() {
 		for (IHTTPDeliverer del : m.values()) {
 			del.shutdown();
 		}
 	}
-	
+
 	/**
 	 * Test if a String is a valid Java-Classname.
-	 * @see http://www.java2s.com/Code/Java/Reflection/DeterminewhetherthesuppliedstringrepresentsawellformedfullyqualifiedJavaclassname.htm
+	 * 
+	 * @see http://www.java2s.com/Code/Java/Reflection/
+	 *      DeterminewhetherthesuppliedstringrepresentsawellformedfullyqualifiedJavaclassname
+	 *      .htm
 	 * @param name
 	 * @return
 	 */
 	private boolean isClassName(String name) {
 		CharacterIterator iter = new StringCharacterIterator(name);
-        char c = iter.first();
-        if (c == CharacterIterator.DONE) return false;
+		char c = iter.first();
+		if (c == CharacterIterator.DONE)
+			return false;
 
-        if (!Character.isJavaIdentifierStart(c) && !Character.isIdentifierIgnorable(c)) return false;
-        
-        c = iter.next();
-        while (c != CharacterIterator.DONE) {
-            if (!Character.isJavaIdentifierPart(c) && !Character.isIdentifierIgnorable(c)) return false;
-            c = iter.next();
-        }
+		if (!Character.isJavaIdentifierStart(c)
+				&& !Character.isIdentifierIgnorable(c))
+			return false;
 
-        return true;
+		c = iter.next();
+		while (c != CharacterIterator.DONE) {
+			if (!Character.isJavaIdentifierPart(c)
+					&& !Character.isIdentifierIgnorable(c))
+				return false;
+			c = iter.next();
+		}
+
+		return true;
 	}
-	
+
 	@Override
-	public AbstractServiceEntry getServiceEntry(Element doc, String uri) throws InstantiationException {
+	public AbstractServiceEntry getServiceEntry(Element doc, String uri)
+			throws InstantiationException {
 		return getServiceEntry(null, uri, doc);
 	}
-	
+
 	@Override
-	public AbstractServiceEntry getServiceEntry(String eventType, String uri, Element doc)
-			throws InstantiationException {
+	public AbstractServiceEntry getServiceEntry(String eventType, String uri,
+			Element doc) throws InstantiationException {
 		String className = doc.getNodeName();
-		
+
 		if (!isClassName(className))
-			logException(new SecurityException("Given class-name is not a valid java-class-name."), doc);
-		
-		className = ServiceConnectorFactory.class.getPackage().getName()+'.'+className;
-		
+			logException(new SecurityException(
+					"Given class-name is not a valid java-class-name."), doc);
+
+		className = ServiceConnectorFactory.class.getPackage().getName() + '.'
+				+ className;
+
 		AbstractServiceEntry entry = null;
 
 		try {
@@ -100,11 +118,12 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 			Class<? extends AbstractServiceEntry> loadClass = clazz
 					.asSubclass(AbstractServiceEntry.class);
 			Constructor<? extends AbstractServiceEntry> constructor;
-			constructor = loadClass.getConstructor(String.class, String.class, Element.class, IEventConnectorFactory.class);
-			
-			if(eventType == null)
+			constructor = loadClass.getConstructor(String.class, String.class,
+					Element.class, IEventConnectorFactory.class);
+
+			if (eventType == null)
 				eventType = doc.getAttribute("event");
-			
+
 			entry = constructor.newInstance(eventType, uri, doc, this);
 
 		} catch (NoSuchMethodException e) {
@@ -125,17 +144,24 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 
 		return entry;
 	}
-	
+
 	@Override
-	public IHTTPDeliverer getHTTPDeliverer(Class<? extends IHTTPDeliverer> clazz) {
-		return m.get(clazz);
+	public IHTTPDeliverer getHTTPDeliverer(String type) {
+		IHTTPDeliverer deliverer = m.get(type);
+		if (deliverer == null)
+			deliverer = m.get(SimpleHTTPDeliverer.class.getSimpleName());
+		return deliverer;
 	}
 
 	/**
 	 * Log exception together with a formatted output of the used XML-Node.
-	 * @param e Exception thrown during instantiation.
-	 * @param doc XML-Node that was used for instantiation.
-	 * @throws InstantiationException re-throws an exception so the calling method knows.
+	 * 
+	 * @param e
+	 *            Exception thrown during instantiation.
+	 * @param doc
+	 *            XML-Node that was used for instantiation.
+	 * @throws InstantiationException
+	 *             re-throws an exception so the calling method knows.
 	 */
 	private final void logException(Exception e, Node doc)
 			throws InstantiationException {

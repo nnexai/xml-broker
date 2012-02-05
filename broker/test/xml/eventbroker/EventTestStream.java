@@ -1,24 +1,38 @@
+package xml.eventbroker;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
+import xml.eventbroker.EventTestStream.IEventStreamStatusUpdate;
+
 public class EventTestStream extends InputStream {
+	
+	public static interface IEventStreamStatusUpdate {
+		void updateProgress(int currentEventNo, int maxEventNo, double percentage);
+		void signalThroughputNotAchieved(int currentEventNo, int sendPerWait, int desiredEventsPerSecond, double achievedEventsPerSecond);
+	}
+	
 	private static final int WAIT_PER_X_EVENTS = 100;
 	private final long waitTime;
+	private final int desiredEventsPerSecond;
 
 	private byte[] currentEvent;
 	private int currentEventOffset;
 
 	private int currentEventNo = -1;
-	private int noOfEvents = 0;
+	private int maxEventNo = 0;
+	
+	private final IEventStreamStatusUpdate statUpdateCallback;
 
-	public EventTestStream(int noOfEvents) {
-		this(noOfEvents, Integer.MAX_VALUE);
+	public EventTestStream(int noOfEvents, IEventStreamStatusUpdate statUpdateCallback) {
+		this(noOfEvents, statUpdateCallback, Integer.MAX_VALUE);
 	}
 
-	public EventTestStream(int noOfEvents, int throughput) {
-		this.noOfEvents = noOfEvents;
+	public EventTestStream(int noOfEvents, IEventStreamStatusUpdate statUpdateCallback, int throughput) {
+		this.maxEventNo = noOfEvents;
+		this.statUpdateCallback = statUpdateCallback;
+		this.desiredEventsPerSecond = throughput;
 		
 		if(throughput > 0 )
 			waitTime = 1000 * WAIT_PER_X_EVENTS / throughput;
@@ -27,13 +41,14 @@ public class EventTestStream extends InputStream {
 
 	}
 
-	StringBuilder strB = new StringBuilder(50);
+	StringBuilder strB = new StringBuilder(70);
 	long lastTime;
 
 	private boolean generateEvent() throws UnsupportedEncodingException {
+		
 		if (currentEventNo == 0)
 			lastTime = System.nanoTime();
-		else if (waitTime > 0 && currentEventNo % WAIT_PER_X_EVENTS == 0) {
+		else if ((waitTime > 0) && (currentEventNo % WAIT_PER_X_EVENTS) == 0) {
 			long timeDiffinMs = (System.nanoTime() - lastTime) / 1000000;
 			long timeToWait = waitTime - timeDiffinMs;
 
@@ -43,31 +58,32 @@ public class EventTestStream extends InputStream {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-			else
-				System.out.println("Could not achieve throughput -- ");
+			else if (statUpdateCallback != null) {
+				final double achievedEventsPerSecond = WAIT_PER_X_EVENTS * 1000. / timeDiffinMs;
+				statUpdateCallback.signalThroughputNotAchieved(currentEventNo, WAIT_PER_X_EVENTS, desiredEventsPerSecond, achievedEventsPerSecond);
+			}
 
 			lastTime = System.nanoTime();
 		}
-		if (currentEventNo > noOfEvents)
+		if (currentEventNo > maxEventNo)
 			return false;
 
 		if (currentEvent != null && currentEventOffset < currentEvent.length)
 			return true;
 
-		if (currentEventNo % Math.max(noOfEvents / 100, 1) == 0) {
-			System.out.println((100. * currentEventNo / noOfEvents) + "% ["
-					+ currentEventNo + "]");
+		if ((statUpdateCallback != null) && (currentEventNo % Math.max(maxEventNo / 50, 2) == 0)) {
+			statUpdateCallback.updateProgress(currentEventNo, maxEventNo, 100.*currentEventNo/maxEventNo);
 		}
 
 		String str;
 
 		if (currentEventNo == -1) {
 			str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><events>";
-		} else if (currentEventNo == noOfEvents) {
+		} else if (currentEventNo == maxEventNo) {
 			str = "</events>";
 		} else {
 			strB.append("<timed-event send-time=\"").append(System.nanoTime())
-					.append("\"/>");
+					.append("\" id=\"").append(currentEventNo).append("\"/>");
 			str = strB.toString();
 			strB.setLength(0);
 		}
@@ -98,7 +114,7 @@ public class EventTestStream extends InputStream {
 	}
 
 	public static void main(String[] args) {
-		InputStreamReader isr = new InputStreamReader(new EventTestStream(10));
+		InputStreamReader isr = new InputStreamReader(new EventTestStream(10, null));
 		StringBuilder str = new StringBuilder(0x1000);
 		char[] buf = new char[100];
 		int read;

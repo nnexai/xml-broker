@@ -49,8 +49,14 @@ public class XMLEventBroker extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		pool = Executors.newCachedThreadPool();
-
+		Runtime runtime = Runtime.getRuntime();        
+        int nrOfProcessors = runtime.availableProcessors();
+        nrOfProcessors = Math.max(nrOfProcessors, 1);
+        System.out.println("Available Cores: "+nrOfProcessors);
+        
+		pool = Executors.newFixedThreadPool(nrOfProcessors);
+        //pool = Executors.newSingleThreadExecutor();
+        
 		factory = new ServiceConnectorFactory();
 		factory.init();
 

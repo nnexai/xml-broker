@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.logging.Logger;
 
@@ -12,8 +13,8 @@ public class SimpleHTTPDeliverer implements IHTTPDeliverer {
 	private static final Logger logger = Logger.getAnonymousLogger();
 	
 	@Override
-	public void deliver(String event, String urlString) throws IOException {
-		URL url = new URL(urlString);
+	public void deliver(String event, URI urlString) throws IOException {
+		URL url = urlString.toURL();
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("POST");
 		con.setDoOutput(true);
@@ -47,6 +48,6 @@ public class SimpleHTTPDeliverer implements IHTTPDeliverer {
 
 	@Override
 	public String toString() {
-		return "[http-request]";
+		return "[simple-http-request]";
 	}
 }

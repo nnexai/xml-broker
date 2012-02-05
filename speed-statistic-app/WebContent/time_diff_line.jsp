@@ -59,25 +59,25 @@
             	double 	   ystep = YRES/(max);%>
             	
         <path d= "
-        <%= "M10,"+(YRES+10-ystep*list.get(0).avg) %>
+        <%= "M10,"+(YRES+15-ystep*list.get(0).avg) %>
         <% 	for (int i = 1; i < list.size(); i++) {%>
         	<%= "L"+(10+xstep*i)+","+(YRES+15-ystep*list.get(i).avg) %><%}%>
         		" style="stroke: url(#linearGradient1); stroke-width:2; fill:none;"/>
         		
         <path d= "
-        <%= "M10,"+(YRES+10-ystep*list.get(0).min) %>
+        <%= "M10,"+(YRES+15-ystep*list.get(0).min) %>
         <% 	for (int i = 1; i < list.size(); i++) {%>
         	<%= "L"+(10+xstep*i)+","+(YRES+15-ystep*list.get(i).min) %><%}%>
         		" style="stroke: #60ff60; stroke-width:1; fill:none;"/>
         
         <path d= "
-        <%= "M10,"+(YRES+10-ystep*list.get(0).max) %>
+        <%= "M10,"+(YRES+15-ystep*list.get(0).max) %>
         <% 	for (int i = 1; i < list.size(); i++) {%>
 		<%= "L"+(10+xstep*i)+","+(YRES+15-ystep*list.get(i).max) %><%}%>
         		" style="stroke: #ff6060; stroke-width:1; fill:none;"/>
 
         <path d= "
-        <%= "M10,"+(YRES+10-ystep*list.get(0).median) %>
+        <%= "M10,"+(YRES+15-ystep*list.get(0).median) %>
         <% 	for (int i = 1; i < list.size(); i++) {%>
 		<%= "L"+(10+xstep*i)+","+(YRES+15-ystep*list.get(i).median) %><%}%>
         		" style="stroke: #6060ff; stroke-width:1; fill:none;"/>

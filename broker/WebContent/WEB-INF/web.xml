@@ -11,4 +11,14 @@
     <servlet-name>XMLEventBroker</servlet-name>
     <url-pattern>/XMLEventBroker/*</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>XMLEventBrokerSpeedTest</display-name>
+    <servlet-name>XMLEventBrokerSpeedTest</servlet-name>
+    <servlet-class>xml.eventbroker.SpeedTest</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>XMLEventBrokerSpeedTest</servlet-name>
+    <url-pattern>/SpeedTest</url-pattern>
+  </servlet-mapping>
 </web-app>

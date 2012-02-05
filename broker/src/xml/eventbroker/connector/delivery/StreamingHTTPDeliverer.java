@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -26,7 +27,7 @@ import org.apache.http.util.EntityUtils;
 
 import sun.net.www.protocol.http.HttpURLConnection;
 
-public class PooledStreamingHTTPDeliverer implements IHTTPDeliverer {
+public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 
@@ -51,7 +52,7 @@ public class PooledStreamingHTTPDeliverer implements IHTTPDeliverer {
 			con.setDoInput(false);
 			con.setChunkedStreamingMode(-1);
 			con.setRequestProperty("Connection", "keep-alive");
-			con.setConnectTimeout(60 * 60 * 1000); // ONE-Hour
+			con.setConnectTimeout(3 * 1000); // ONE-Hour
 			con.setRequestProperty("Content-type", "text/xml");
 			
 			OutputStream out = con.getOutputStream();
@@ -72,8 +73,8 @@ public class PooledStreamingHTTPDeliverer implements IHTTPDeliverer {
 
 		}
 
-		public PersistentConnection(String urlString) throws IOException {
-			url = new URL(urlString);
+		public PersistentConnection(URI urlString) throws IOException {
+			url = urlString.toURL();
 			connect();
 		}
 
@@ -85,16 +86,16 @@ public class PooledStreamingHTTPDeliverer implements IHTTPDeliverer {
 				connect();
 				writer.append(event);
 				writer.flush();
-			} 
+			}
 		}
 	}
 
-	Map<String, PersistentConnection> map;
+	Map<URI, PersistentConnection> map;
 
 	@Override
 	public void init() {
 		map = Collections
-				.synchronizedMap(new LinkedHashMap<String, PersistentConnection>() {
+				.synchronizedMap(new LinkedHashMap<URI, PersistentConnection>() {
 
 				});
 	}
@@ -112,7 +113,7 @@ public class PooledStreamingHTTPDeliverer implements IHTTPDeliverer {
 	}
 
 	@Override
-	public void deliver(String event, String urlString) throws IOException {
+	public void deliver(String event, URI urlString) throws IOException {
 		PersistentConnection con;
 		synchronized (map) {
 			if ((con = map.get(urlString)) == null) {
@@ -125,6 +126,6 @@ public class PooledStreamingHTTPDeliverer implements IHTTPDeliverer {
 	
 	@Override
 	public String toString() {
-		return "[http-request-stream]";
+		return "[streaming-http-request]";
 	}
 }

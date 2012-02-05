@@ -1,31 +1,25 @@
 package xml.eventbroker.connector;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.w3c.dom.Element;
 
 import xml.eventbroker.connector.delivery.IHTTPDeliverer;
-import xml.eventbroker.connector.delivery.PooledHTTPDeliverer;
-import xml.eventbroker.connector.delivery.PooledStreamingHTTPDeliverer;
-import xml.eventbroker.connector.delivery.SimpleHTTPDeliverer;
 
 public class HTTPConnector extends AbstractServiceEntry {
-	private final String url;
+	private final URI url;
 	private final IHTTPDeliverer deliverer; 
 	
-	public HTTPConnector(String event, String uri, String url, boolean streaming, IEventConnectorFactory fac) {
+	public HTTPConnector(String event, String uri, String url, String type, IEventConnectorFactory fac) throws URISyntaxException {
 		super(event, uri);
-		this.url = url;
-		
-		//TODO: maybe put this responsibility inside the factory?.. getPooledDeliverer, getDeliverer etc.? 
-		//Class<? extends IHTTPDeliverer> delivC = streaming ? PooledHTTPDeliverer.class : SimpleHTTPDeliverer.class;
-		Class<? extends IHTTPDeliverer> delivC = streaming ? PooledStreamingHTTPDeliverer.class : PooledHTTPDeliverer.class;
-		
-		this.deliverer = fac.getHTTPDeliverer(delivC);
+		this.url = new URI(url);
+		this.deliverer = fac.getHTTPDeliverer(type);
 	}
 	
-	public HTTPConnector(String event, String uri, Element xml, IEventConnectorFactory fac) {
-		this(event, uri, xml.getAttribute("url"), "True".equals(xml.getAttribute("streaming")), fac);
+	public HTTPConnector(String event, String uri, Element xml, IEventConnectorFactory fac) throws URISyntaxException {
+		this(event, uri, xml.getAttribute("url"), xml.getAttribute("type"), fac);
 	}
 
 	@Override
