@@ -46,6 +46,23 @@ public class EventTestStream extends InputStream {
 
 	private boolean generateEvent() throws UnsupportedEncodingException {
 		
+		if (currentEventNo > maxEventNo)
+			return false;
+		else if (currentEvent != null && currentEventOffset < currentEvent.length)
+			return true;
+		
+		/*
+		// Update Progress
+		if ((statUpdateCallback != null) && (currentEventNo % Math.max(maxEventNo / 50, 2) == 0)) {
+			statUpdateCallback.updateProgress(currentEventNo, maxEventNo, 100.*currentEventNo/maxEventNo);
+		}
+		*/
+		// Update Progress
+		if ((statUpdateCallback != null) && ((currentEventNo==maxEventNo) || (currentEventNo % Math.min(Math.max(maxEventNo / 100, 2), 500) == 0))) {
+			statUpdateCallback.updateProgress(currentEventNo, maxEventNo, 100.*currentEventNo/maxEventNo);
+		}
+		
+		// Wait if we send too much
 		if (currentEventNo == 0)
 			lastTime = System.nanoTime();
 		else if ((waitTime > 0) && (currentEventNo % WAIT_PER_X_EVENTS) == 0) {
@@ -65,16 +82,9 @@ public class EventTestStream extends InputStream {
 
 			lastTime = System.nanoTime();
 		}
-		if (currentEventNo > maxEventNo)
-			return false;
 
-		if (currentEvent != null && currentEventOffset < currentEvent.length)
-			return true;
-
-		if ((statUpdateCallback != null) && (currentEventNo % Math.max(maxEventNo / 50, 2) == 0)) {
-			statUpdateCallback.updateProgress(currentEventNo, maxEventNo, 100.*currentEventNo/maxEventNo);
-		}
-
+		
+		// Generate Event
 		String str;
 
 		if (currentEventNo == -1) {

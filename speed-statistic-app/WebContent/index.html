@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
+<script type="text/javascript" src="js/statistics_support.js"></script>
+<link href="css/ui-lightness/jquery-ui-1.8.17.custom.css"
+	rel="stylesheet" type="text/css" />
+<link href="css/simple.css" rel="stylesheet" type="text/css" />
+<title>XML-Broker Benchmark</title>
+</head>
+<body>
+	<div id="benchmark-param">
+		<h2>Benchmark Parameters:</h2>
+		<form id="form_data" action="SpeedStatistics" method="GET">
+			Number of Events: <input type="text" name="event_count" value="10000" /><br />
+			Events per Second: <input type="text" name="throughput" value="1000" /><br />
+			Deliverer: <select name="deliverer">
+				<option value="SimpleHTTPDeliverer">HTTPUrlConnection</option>
+				<option value="StreamingHTTPDeliverer">HTTPUrlConnection
+					[Streaming]</option>
+				<option value="HotpotatoHTTPDeliverer">Hotpotato HTTPClient</option>
+				<option value="PooledHTTPDeliverer">Apache HTTPClient</option>
+			</select><br /> Reset Statisics: <input type="checkbox" checked="checked"
+				name="reset_statistics" /><br /> <input id="submit_button"
+				type="submit" value="Start" />
+		</form>
+	</div>
+	<div id="progress-bars">
+		<h2>Progress:</h2>
+		<div id="p-status">Not-started</div>
+		<div id="p-broker">
+			<span id="event-send-count">---</span>/<span class="max-event-count">---</span>
+		</div>
+		<div id="p-reciever">
+			<span id="event-recieved-count">---</span>/<span
+				class="max-event-count">---</span>
+		</div>
+	</div>
+	<div id="results">
+		<h2>Results:</h2>
+		<table>
+			<thead>
+				<tr>
+					<th>Property</th>
+					<th>Value</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>#Events send</td>
+					<td><div id="event-send-value">---</div></td>
+				</tr>
+				<tr>
+					<td>#Events recieved</td>
+					<td><div id="event-recieved-value">---</div></td>
+				</tr>
+				<tr>
+					<td>send-time [ms]</td>
+					<td><div id="send-time-value">---</div></td>
+				</tr>
+				<tr>
+					<td>recieve-time [ms]</td>
+					<td><div id="recieve-time-value">---</div></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div id=graphics>
+	<ul>
+		<li>Process-Receive Delay: <div id="delay-graphic"></div></li>
+		<li>Order of Arrival:<div id="offset-graphic"></div></li>
+	</ul>
+	</div>
+</body>
+</html>

@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,17 +31,34 @@ public class SpeedTest extends HttpServlet {
 	AtomicBoolean running = new AtomicBoolean(false);
 
 	// Immutable Data Object
-	Object stats = null;
-	Object error = null;
+	TestStatistics stats = null;
+	
+	//Object error = null; unused atm
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		if (!running.get() && stats != null) {
-			// Finished & has run at least 1 time
-			// return Data
+		if (stats != null) {
+			resp.setContentType("text/xml");
+			ServletOutputStream out = resp.getOutputStream();
+			out.write(stats.toXML().getBytes("UTF-8"));
 		}
 	}
+	
+	private class MeasureThread extends Thread {
+		int ev, throu;
+		String con;
+		
+		public MeasureThread(int ev, int throu, String con) {
+			this.ev = ev;
+			this.throu = throu;
+			this.con = con;
+		}
+		
+		public void run() {
+		startMeasurement(ev, throu, con);
+		};
+	};
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
@@ -64,10 +82,8 @@ public class SpeedTest extends HttpServlet {
 				events = Integer.valueOf(evtCntS);
 
 			// start run
-			startMeasurement(events, throughput, connector);
-			// store data
+			new MeasureThread(events, throughput, connector).start(); 
 
-			running.set(false);
 			resp.setStatus(HttpServletResponse.SC_OK);
 		} else {
 			// already running
@@ -76,7 +92,7 @@ public class SpeedTest extends HttpServlet {
 
 	public void startMeasurement(int noOfEvents, int throuput, String connector) {
 		stats = null;
-		error = null;
+		//error = null;
 
 		final XMLEventBroker broker = new XMLEventBroker();
 		Class<? extends XMLEventBroker> clazz = broker.getClass();
@@ -112,8 +128,10 @@ public class SpeedTest extends HttpServlet {
 				@Override
 				public void updateProgress(int currentEventNo, int maxEventNo,
 						double percentage) {
-					System.out.println((int) (percentage * 10 + 0.5) / 10.
+					/*
+					 System.out.println((int) (percentage * 10 + 0.5) / 10.
 							+ "% [" + currentEventNo + '/' + maxEventNo + ']');
+					*/
 					stats_local.currentEvent = currentEventNo;
 					stats_local.progress = percentage;
 				}
@@ -169,6 +187,8 @@ public class SpeedTest extends HttpServlet {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		} finally {
+			running.set(false);
 		}
 	}
 }

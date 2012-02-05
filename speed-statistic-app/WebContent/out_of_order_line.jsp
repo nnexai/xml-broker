@@ -25,7 +25,7 @@
 	    <%
 	    	Statistics stat  = (Statistics)request.getAttribute("statistic");
         	List<JoinedDataPoint> list  = stat.getReduced(50);
-        	long max = stat.max;
+        	long max = stat.max_offset;
         	
         	final int XSTEPS=20;
         	final int YSTEPS=10;
@@ -33,7 +33,7 @@
         	double xMarkerStep = XRES/XSTEPS;
 			double yMarkerStep = YRES/YSTEPS;
 			double xMarkerStepV = (stat.l.size())/(double)XSTEPS;
-			double yMarkerStepV = (max)/(double)YSTEPS;
+			double yMarkerStepV = (2*max)/(double)YSTEPS;
 			for(int x = 1; x < XSTEPS+1; x++) {
 				double xPos = 10+x*xMarkerStep;%>
 			<% if (x%2==0) {
@@ -47,41 +47,34 @@
 			}
 			for(int y = 1; y < YSTEPS+1; y++) {
 				double yPos = 15+(YSTEPS-y)*yMarkerStep;%>
-			<% if ((y)%2==0) {%>
-				<line x1="4" y1="<%=yPos%>" x2="16" y2="<%=yPos%>" style="stroke: #000000; stroke-width:2;"/>
-				<text x="19" y="<%=yPos+2.8%>" fill="black" font-size="10"><%=(long)(y*yMarkerStepV*10.0)/10.0 %></text>		
-		<% 		} else {%>
-				<line x1="6" y1="<%=yPos%>" x2="14" y2="<%=yPos%>" style="stroke: #000000; stroke-width:1.2;"/>
-		<%		}				
+		<% if ((y)%2==0)
+{%><line x1="4" y1="<%=yPos%>" x2="16" y2="<%=yPos%>" style="stroke: #000000; stroke-width:2;"/>
+	<text x="19" y="<%=yPos+2.8%>" fill="black" font-size="10"><%=((long)(y*yMarkerStepV-max)*10.0)/10.0%></text><%} else 
+{%>	<line x1="6" y1="<%=yPos%>" x2="14" y2="<%=yPos%>" style="stroke: #000000; stroke-width:1.2;"/>
+<%}
 			}
      		if(list.size() > 0) {
             	double     xstep = XRES/(list.size()-1); 
-            	double 	   ystep = YRES/(max);%>
+            	double 	   ystep = YRES/(2.0*max);%>
             	
         <path d= "
-        <%= "M10,"+(YRES+15-ystep*list.get(0).avg) %>
-        <% 	for (int i = 1; i < list.size(); i++) {%>
-        	<%= "L"+(10+xstep*i)+","+(YRES+15-ystep*list.get(i).avg) %><%}%>
-        		" style="stroke: url(#linearGradient1); stroke-width:2; fill:none;"/>
+        <%= "M10,"+( 15+YRES-ystep*(list.get(0).avg_offset+max) ) %>
+        <% 	for (int i = 1; i < list.size(); i++) 
+{%><%= "L"+(10+xstep*i)+","+( 15+YRES-ystep*(list.get(i).avg_offset+max) ) %>
+        <%}%>" style="stroke: url(#linearGradient1); stroke-width:2; fill:none;"/>
+
+        <path d= "
+        <%= "M10,"+( 15+YRES-ystep*(list.get(0).min_offset+max) ) %>
+        <% 	for (int i = 1; i < list.size(); i++) 
+{%><%= "L"+(10+xstep*i)+","+( 15+YRES-ystep*(list.get(i).min_offset+max) ) %>
+        <%}%>" style="stroke: #0000ff; stroke-width:1; fill:none;"/>
+
+        <path d= "
+        <%= "M10,"+( 15+YRES-ystep*(list.get(0).max_offset+max) ) %>
+        <% 	for (int i = 1; i < list.size(); i++) 
+{%><%= "L"+(10+xstep*i)+","+( 15+YRES-ystep*(list.get(i).max_offset+max) ) %>
+        <%}%>" style="stroke: #ff0000; stroke-width:1; fill:none;"/>
         		
-        <path d= "
-        <%= "M10,"+(YRES+15-ystep*list.get(0).min) %>
-        <% 	for (int i = 1; i < list.size(); i++) {%>
-        	<%= "L"+(10+xstep*i)+","+(YRES+15-ystep*list.get(i).min) %><%}%>
-        		" style="stroke: #60ff60; stroke-width:1; fill:none;"/>
-        
-        <path d= "
-        <%= "M10,"+(YRES+15-ystep*list.get(0).max) %>
-        <% 	for (int i = 1; i < list.size(); i++) {%>
-		<%= "L"+(10+xstep*i)+","+(YRES+15-ystep*list.get(i).max) %><%}%>
-        		" style="stroke: #ff6060; stroke-width:1; fill:none;"/>
-
-        <path d= "
-        <%= "M10,"+(YRES+15-ystep*list.get(0).median) %>
-        <% 	for (int i = 1; i < list.size(); i++) {%>
-		<%= "L"+(10+xstep*i)+","+(YRES+15-ystep*list.get(i).median) %><%}%>
-        		" style="stroke: #6060ff; stroke-width:1; fill:none;"/>
-
         <!-- <text x="30" y="130" style="stroke:#000000; fill: #000000; font-family:Arial; font-size: 14px;" >Graphs</text> -->
     	<%	}%>
     </svg>

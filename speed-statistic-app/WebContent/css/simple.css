@@ -1,0 +1,19 @@
+@CHARSET "UTF-8";
+
+#progress-bars {
+	width: 400px;
+}
+
+#graphics {
+	padding-top: 1em;
+}
+
+ul {
+	list-style: none;	
+	display: inline;
+}
+
+li {
+	float: left;
+	padding-left: 1em;
+}
