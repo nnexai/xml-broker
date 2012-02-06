@@ -60,8 +60,8 @@ public class ExampleService extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		AsyncContext async = req.startAsync();
-		logger.info("Setting session timeout");
-		async.setTimeout(20 * 1000);
+		logger.info("Setting procession timeout");
+		async.setTimeout(25 * 1000);
 		Thread t = new ProcessingThread(async);
 		t.start();
 
@@ -100,23 +100,26 @@ public class ExampleService extends HttpServlet {
 					while ((r = filter.read(buf)) >= 0) {
 						b.append(buf, 0, r);
 					}
-					System.err.println("<--- EVENT!! --->");
 
+					logger.info("Adding event " + b.toString());
+					
 					synchronized (events) {
-						logger.info("Added event " + b.toString());
 						events.add(b.toString());
 					}
 				}
-				filter.forceClose();
-				
 				logger.info("Connection was closed by remote");
-				cxt.complete();
 			} catch (SocketException e) {
 				logger.log(Level.WARNING, "Connection timed out", e);
+				HttpServletResponse resp = (HttpServletResponse)cxt.getResponse();
+				resp.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT);
+				resp.getOutputStream().close();
 			} catch (IOException e) {
 				logger.log(Level.WARNING, "Connection timed out", e);
+				HttpServletResponse resp = (HttpServletResponse)cxt.getResponse();
+				resp.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT);
+				resp.getOutputStream().close();
 			} finally {
-				reader.close();
+				cxt.complete();
 			}
 
 		}

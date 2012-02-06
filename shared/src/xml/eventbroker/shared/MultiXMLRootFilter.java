@@ -31,7 +31,7 @@ public class MultiXMLRootFilter extends FilterReader {
 	public boolean hasFinished() {
 		return finished;
 	}
-	
+
 	/**
 	 * Often the class using this Stream tries to close it, after EOF has been
 	 * reached. Since this class fakes EOF on each XML-Boundary we need to hold
@@ -45,11 +45,11 @@ public class MultiXMLRootFilter extends FilterReader {
 
 	@Override
 	public boolean ready() throws IOException {
-		if(pendingBytes>0)
+		if (stop || pendingBytes > 0)
 			return true;
 		return super.ready();
 	}
-	
+
 	/**
 	 * Closes the underlying stream.
 	 * 
@@ -64,18 +64,19 @@ public class MultiXMLRootFilter extends FilterReader {
 
 		int r = 0;
 
+		if (stop) {
+			if (DEBUG)
+				System.out
+						.println("Stop request! -- read again to continue");
+			stop = false;
+			return -1;
+		}
+	
 		if (pendingBytes > 0) {
-			if (stop) {
-				if (DEBUG)
-					System.out
-							.println("Stop request on pending! -- read again to continue");
-				stop = false;
-				return -1;
-			}
-
 			// some Bytes pending from last batch --> use them
 			r = pendingBytes;
 			pendingBytes = 0;
+
 		} else {
 			// nothing pending so read some new
 			try {
@@ -90,15 +91,6 @@ public class MultiXMLRootFilter extends FilterReader {
 				return -1;
 			}
 			pendingOffset = 0;
-
-			if (stop) {
-				if (DEBUG)
-					System.out
-							.println("Stop request! -- read again to continue");
-				stop = false;
-				pendingBytes = r;
-				return -1;
-			}
 		}
 
 		if (DEBUG)
@@ -106,7 +98,7 @@ public class MultiXMLRootFilter extends FilterReader {
 					+ new String(buf, pendingOffset, r));
 
 		int i;
-		for (i = pendingOffset; (i < r + pendingOffset) & (pendingBytes == 0); i++) {
+		for (i = pendingOffset; (i < r + pendingOffset) && !stop; i++) {
 			parse(r, i);
 		}
 
@@ -143,8 +135,6 @@ public class MultiXMLRootFilter extends FilterReader {
 		case PARSING:
 			if (c == '<')
 				status = ParserStatus.TAG_OPEN;
-			else if (!Character.isSpaceChar(c))
-				status = ParserStatus.ERROR;
 			break;
 
 		case TAG_OPEN:
@@ -211,32 +201,31 @@ public class MultiXMLRootFilter extends FilterReader {
 			case 'T':
 				break;
 			case '[':
-				status = ParserStatus.CDATA;				
+				status = ParserStatus.CDATA;
 			default:
 				status = ParserStatus.ERROR;
 			}
 			break;
 
 		case CDATA:
-			if (c == ']' )
+			if (c == ']')
 				status = ParserStatus.CDATA_OUTRO_1;
 			break;
 
 		case CDATA_OUTRO_1:
-			if (c == ']' )
+			if (c == ']')
 				status = ParserStatus.CDATA_OUTRO_2;
 			else
 				status = ParserStatus.CDATA;
 			break;
 
 		case CDATA_OUTRO_2:
-			if (c == '>' )
+			if (c == '>')
 				status = ParserStatus.PARSING;
 			else
 				status = ParserStatus.CDATA;
 			break;
 
-			
 		case INSTRUCTION:
 			if (c == '?')
 				status = ParserStatus.INSTRUCTION_OUTRO;
@@ -270,7 +259,7 @@ public class MultiXMLRootFilter extends FilterReader {
 		case ATTRIB_VALUE_DOUBLE_QUOTE:
 			if (c == '\"')
 				status = ParserStatus.ELEMENT;
-			
+
 		case ATTRIB_VALUE_SINGLE_QUOTE:
 			if (c == '\'')
 				status = ParserStatus.ELEMENT;
@@ -285,7 +274,7 @@ public class MultiXMLRootFilter extends FilterReader {
 
 		case ELEMENT_SINGLE_TAG:
 			if (c == '>') {
-				if (level == 0) 
+				if (level == 0)
 					stop(r, i);
 				status = ParserStatus.PARSING;
 			}
