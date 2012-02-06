@@ -1,7 +1,5 @@
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,13 +27,15 @@ public class StreamingConnectionTest {
 		con.setRequestMethod("POST");
 		con.setDoOutput(true);
 		con.setDoInput(true);
-		con.setFixedLengthStreamingMode(MSG1.length+MSG2.length);
+		con.setChunkedStreamingMode(-1);
+//		con.setFixedLengthStreamingMode(MSG1.length+MSG2.length);
 		con.setUseCaches(false);
-		// con.setRequestProperty("Connection", "keep-alive");
+		// needed, so that the sockets buffer is not reused!
+		con.setRequestProperty("CONNECTION", "close");
 		// logging service should be set to timeout after ~20 seconds.. 
 		con.setConnectTimeout(2 * 1000); // 2 Seconds
 		con.setReadTimeout(10*1000); // 10 Seconds for reading Answer
-		con.setRequestProperty("Content-type", "text/xml");
+		con.setRequestProperty("CONTENT-TYPE", "text/xml");
 		
 		OutputStream out = con.getOutputStream();
 
@@ -48,7 +48,7 @@ public class StreamingConnectionTest {
 		} 
 		
 		Thread.sleep(30*1000);
-		
+
 		try {
 			logger.info("Now trying to send MSG2");
 			out.write(MSG2);
@@ -58,9 +58,9 @@ public class StreamingConnectionTest {
 			logger.log(Level.INFO, "This is normal", e);
 		} 
 		
-		out.close();
-		System.out.println(con.getExpiration());
+		// also closes the stream
 		System.out.println(con.getResponseMessage());
+
 		} catch (UnsupportedEncodingException e) {
 			logger.log(Level.SEVERE, "Could not translate Messages to byte array", e);
 		} catch (MalformedURLException e) {
