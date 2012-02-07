@@ -9,7 +9,7 @@
 		<HTTPConnector event="jython" uri="evaluate/jython" url='http://localhost:8080/callback-app/JythonReply'/>
 		<HTTPConnector event="jython" uri="log/jython" url='http://localhost:8080/logging-app/XMLEventExample'/>
 		<XPathFilter event="test" uri="log/filtered/test" filter="@id = 1">
-			<HTTPConnector url='http://localhost:8080/logging-app/XMLEventExample'/>
+		<HTTPConnector url='http://localhost:8080/logging-app/XMLEventExample'/>
 		</XPathFilter>
 	</register>
 </config>

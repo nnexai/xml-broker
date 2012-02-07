@@ -11,6 +11,10 @@
     <display-name>SpeedStatistics</display-name>
     <servlet-name>SpeedStatistics</servlet-name>
     <servlet-class>xml.eventbroker.test.SpeedStatisticsApp</servlet-class>
+    <init-param>
+        <param-name>xmlbroker</param-name>
+        <param-value>http://localhost:8080/broker</param-value>
+    </init-param> 
   </servlet>
   <servlet-mapping>
     <servlet-name>SpeedStatistics</servlet-name>

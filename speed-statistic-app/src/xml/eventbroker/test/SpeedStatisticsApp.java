@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -47,10 +48,14 @@ public class SpeedStatisticsApp extends HttpServlet {
 
 	List<DataPoint> events;
 	XMLInputFactory f;
+	
+	private String brokerUrl;
 
 	@Override
 	public void init() throws ServletException {
 		super.init();
+		brokerUrl = getInitParameter("xmlbroker");
+		
 		f = XMLInputFactory.newInstance();
 		f.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
 
@@ -112,8 +117,7 @@ public class SpeedStatisticsApp extends HttpServlet {
 				}
 
 			StringBuilder params = new StringBuilder();
-			params.append(
-					"http://localhost:8080/broker/SpeedTest?test.eventcount=")
+			params.append(brokerUrl+"/SpeedTest?test.eventcount=")
 					.append(cnt);
 			params.append("&test.throughput=").append(throughput);
 			params.append("&test.type=").append(deliverer);
@@ -128,7 +132,7 @@ public class SpeedStatisticsApp extends HttpServlet {
 		} else if (paths != null && paths.length == 2
 				&& "get_statistics".equals(paths[1])) {
 
-			URL broker = new URL("http://localhost:8080/broker/SpeedTest");
+			URL broker = new URL(brokerUrl+"/SpeedTest");
 			HttpURLConnection con = (HttpURLConnection) broker.openConnection();
 			con.setRequestMethod("GET");
 			con.setDoInput(true);
