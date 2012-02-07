@@ -74,7 +74,7 @@ public class JythonReplyService extends HttpServlet {
 		try {
 
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			while (!filtered.hasFinished()) {
+			while (filtered.hasNext()) {
 				try {
 					StringWriter sw = new StringWriter(0x1000);
 

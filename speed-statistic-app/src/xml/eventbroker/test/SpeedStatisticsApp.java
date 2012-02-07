@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
@@ -222,19 +223,19 @@ public class SpeedStatisticsApp extends HttpServlet {
 	private void readXMLEvents(Reader reader) throws IOException {
 		MultiXMLRootFilter filter = new MultiXMLRootFilter(reader, 0x100);
 		try {
-
-			while (!filter.hasFinished()) {
+			while (filter.hasNext()) {
 				parseStream(filter);
 			}
-			filter.forceClose();
+		} catch (SocketTimeoutException e) {
+			logger.log(Level.WARNING, "Connection timed out");
 		} catch (SocketException e) {
-			logger.log(Level.WARNING, "Connection timed out", e);
+			logger.log(Level.WARNING, "SockerError during parse", e);
 		} catch (IOException e) {
-			logger.log(Level.WARNING, "Connection timed out", e);
+			logger.log(Level.WARNING, "IOError during parse", e);
 		} catch (XMLStreamException e) {
 			logger.log(Level.WARNING, "Error during parse", e);
 		} finally {
-			reader.close();
+			filter.forceClose();
 		}
 	}
 }

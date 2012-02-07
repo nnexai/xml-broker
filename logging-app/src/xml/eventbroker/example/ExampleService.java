@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -92,7 +93,7 @@ public class ExampleService extends HttpServlet {
 			MultiXMLRootFilter filter = new MultiXMLRootFilter(reader, 0x100);
 			try {
 
-				while (!filter.hasFinished()) {
+				while (filter.hasNext()) {
 					int r;
 					StringBuilder b = new StringBuilder(0x1000);
 					char[] buf = new char[0x100];
@@ -108,15 +109,20 @@ public class ExampleService extends HttpServlet {
 					}
 				}
 				logger.info("Connection was closed by remote");
-			} catch (SocketException e) {
-				logger.log(Level.WARNING, "Connection timed out", e);
+			} catch (SocketTimeoutException e) {
+				logger.log(Level.WARNING, "Connection timed out");
 				HttpServletResponse resp = (HttpServletResponse)cxt.getResponse();
 				resp.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT);
 				resp.getOutputStream().close();
-			} catch (IOException e) {
-				logger.log(Level.WARNING, "Connection timed out", e);
+			} catch (SocketException e) {
+				logger.log(Level.WARNING, "SocketException", e);
 				HttpServletResponse resp = (HttpServletResponse)cxt.getResponse();
-				resp.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT);
+				resp.sendError(HttpServletResponse.SC_EXPECTATION_FAILED);
+				resp.getOutputStream().close();
+			} catch (IOException e) {
+				logger.log(Level.WARNING, "IOException", e);
+				HttpServletResponse resp = (HttpServletResponse)cxt.getResponse();
+				resp.sendError(HttpServletResponse.SC_EXPECTATION_FAILED);
 				resp.getOutputStream().close();
 			} finally {
 				cxt.complete();

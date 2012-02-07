@@ -51,7 +51,7 @@ public class XMLEventBroker extends HttpServlet {
 		super.init();
 		Runtime runtime = Runtime.getRuntime();        
         int nrOfProcessors = runtime.availableProcessors();
-        nrOfProcessors = Math.max(nrOfProcessors, 1);
+        nrOfProcessors = Math.max(nrOfProcessors+1, 1);
         System.out.println("Available Cores: "+nrOfProcessors);
         
 		pool = Executors.newFixedThreadPool(nrOfProcessors);

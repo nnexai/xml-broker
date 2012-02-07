@@ -72,9 +72,6 @@ public class XPathFilter extends AbstractServiceEntry {
 		try {
 
 			result = (Node) path.evaluate(node, XPathConstants.NODE);
-
-			System.out.println("Got: "+eventStr+" will evaluate "+pathString);
-			System.out.println("Result: "+result);
 			
 			if (result != null) {
 				Object resultB = result;

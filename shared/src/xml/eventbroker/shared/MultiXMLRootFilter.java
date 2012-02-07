@@ -28,8 +28,18 @@ public class MultiXMLRootFilter extends FilterReader {
 		this.buf = new char[buffer];
 	}
 
-	public boolean hasFinished() {
-		return finished;
+	/**
+	 * Test if there is possibly exists another element inside the stream. This
+	 * Method will block until it can decide if there is more data available or
+	 * if the underlying stream is closed. As a side effect whitespace between
+	 * elements is skipped.
+	 * 
+	 * @return True, if an unread, non-whitespace character is found.
+	 * 		   False, if the stream ended before more data was found.
+	 * @throws IOException
+	 */
+	public boolean hasNext() throws IOException {
+		return !finished && skipToNext();
 	}
 
 	/**
@@ -45,9 +55,7 @@ public class MultiXMLRootFilter extends FilterReader {
 
 	@Override
 	public boolean ready() throws IOException {
-		if (stop || pendingBytes > 0)
-			return true;
-		return super.ready();
+		return (super.ready() || stop || pendingBytes > 0);
 	}
 
 	/**
@@ -59,19 +67,48 @@ public class MultiXMLRootFilter extends FilterReader {
 		super.close();
 	}
 
+	private boolean skipToNext() throws IOException {
+
+		do {
+			if (pendingBytes <= 0) {
+				pendingBytes = super.read(buf, 0, buf.length);
+				if (pendingBytes == -1) {
+					this.finished = true;
+					return false;
+				}
+				pendingOffset = 0;
+			}
+
+			for (int i = pendingOffset; i < pendingOffset + pendingBytes; i++) {
+				char c = buf[i];
+
+				if (!Character.isSpaceChar(c)) {
+					if (DEBUG)
+						System.out.println("Skipped to [" + c + "] pendingO:"
+								+ pendingOffset + " pendingB:" + pendingBytes);
+					return true;
+				}
+				pendingOffset++;
+				pendingBytes--;
+			}
+		} while (true);
+	}
+
 	@Override
 	public int read(char[] cbuf, int off, int len) throws IOException {
 
-		int r = 0;
-
+		if (finished)
+			return -1;
 		if (stop) {
 			if (DEBUG)
 				System.out
-						.println("Stop request! -- read again to continue");
+				.println("Stop on pending request! -- read again to continue");
 			stop = false;
 			return -1;
 		}
-	
+
+		int r = 0;
+
 		if (pendingBytes > 0) {
 			// some Bytes pending from last batch --> use them
 			r = pendingBytes;
@@ -90,6 +127,7 @@ public class MultiXMLRootFilter extends FilterReader {
 				this.finished = true;
 				return -1;
 			}
+
 			pendingOffset = 0;
 		}
 
@@ -119,7 +157,7 @@ public class MultiXMLRootFilter extends FilterReader {
 	}
 
 	private void stop(int r, int i) {
-		pendingBytes = r - i - 1;
+		pendingBytes = r - i + pendingOffset - 1;
 		stop = true;
 	}
 
@@ -280,20 +318,23 @@ public class MultiXMLRootFilter extends FilterReader {
 			}
 		}
 
-		if (DEBUG)
+		if (DEBUG) {
+			// System.out.println('\'' + c + "\' [r:" + r + ", i:" + i + " P:"
+			// + pendingBytes + ']');
 			if (!old.equals(status))
 				System.out.println(old + " -- " + c + " --> " + status);
+		}
 	}
 
 	public static void main(String[] args) {
 
 		MultiXMLRootFilter in = new MultiXMLRootFilter(
 				new StringReader(
-						"<!-- this is just a comment --> <a> </a> <log attr=\"This should be logged\"><something /></log> <bla/>  "),
+						"  <!-- this is just a comment --> <a> </a> <log attr=\"This should be logged\">hallo Welt!<something /></log> <bla/>"),
 				0x10);
 
 		try {
-			while (!in.hasFinished()) {
+			while (in.hasNext()) {
 				int r;
 				StringBuilder b = new StringBuilder(0x100);
 				char[] buf = new char[0x10];
