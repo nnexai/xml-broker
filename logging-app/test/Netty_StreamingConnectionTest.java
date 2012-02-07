@@ -48,14 +48,12 @@ public class Netty_StreamingConnectionTest {
 	public static void main(String[] args) {
 
 		try {
-			final String host = "localhost";
-			final int port = 8080;
 			final ClientBootstrap bootstrap = new ClientBootstrap(
 					new NioClientSocketChannelFactory(
 							Executors.newCachedThreadPool(),
 							Executors.newCachedThreadPool()));
 			bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-
+				
 				@Override
 				public ChannelPipeline getPipeline() throws Exception {
 					ChannelPipeline pipeline = Channels.pipeline(new HttpClientCodec());
@@ -64,6 +62,9 @@ public class Netty_StreamingConnectionTest {
 					return pipeline;
 				}
 			});
+
+			final String host = "localhost";
+			final int port = 8080;
 
 			ChannelFuture future = bootstrap.connect(new InetSocketAddress(
 					host, port));

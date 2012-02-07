@@ -22,6 +22,7 @@ import org.w3c.dom.Node;
 
 import xml.eventbroker.connector.delivery.HotpotatoHTTPDeliverer;
 import xml.eventbroker.connector.delivery.IHTTPDeliverer;
+import xml.eventbroker.connector.delivery.NettyStreamingHTTPDeliverer;
 import xml.eventbroker.connector.delivery.PooledHTTPDeliverer;
 import xml.eventbroker.connector.delivery.StreamingHTTPDeliverer;
 import xml.eventbroker.connector.delivery.SimpleHTTPDeliverer;
@@ -51,6 +52,10 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 		m.put(d.getClass().getSimpleName(), d);
 		
 		d = new HotpotatoHTTPDeliverer();
+		d.init();
+		m.put(d.getClass().getSimpleName(), d);
+
+		d = new NettyStreamingHTTPDeliverer();
 		d.init();
 		m.put(d.getClass().getSimpleName(), d);
 		
