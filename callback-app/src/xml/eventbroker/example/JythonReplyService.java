@@ -46,10 +46,13 @@ public class JythonReplyService extends HttpServlet {
 	private DocumentBuilderFactory factory = DocumentBuilderFactory
 			.newInstance();
 	private Transformer t;
+	
+	private String xmlBroker;
 
 	@Override
 	public void init() throws ServletException {
 		super.init();
+		xmlBroker = getInitParameter("xmlbroker");
 		factory.setValidating(false);
 		PySystemState.initialize(  );
 
@@ -138,7 +141,7 @@ public class JythonReplyService extends HttpServlet {
 	private void answerRequest(String string) {
 		URL url;
 		try {
-			url = new URL("http://localhost:8080/broker/XMLEventBroker/");
+			url = new URL(xmlBroker);
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestMethod("POST");
 			con.setDoOutput(true);

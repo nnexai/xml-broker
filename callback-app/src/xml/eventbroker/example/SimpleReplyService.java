@@ -43,9 +43,12 @@ public class SimpleReplyService extends HttpServlet {
 			.newInstance();
 	private Transformer t;
 
+	private String xmlBroker;
+	
 	@Override
 	public void init() throws ServletException {
 		super.init();
+		xmlBroker = getInitParameter("xmlbroker");
 		factory.setValidating(false);
 
 		try {
@@ -123,7 +126,7 @@ public class SimpleReplyService extends HttpServlet {
 	private void answerRequest(String string) {
 		URL url;
 		try {
-			url = new URL("http://localhost:8080/broker/XMLEventBroker/");
+			url = new URL(xmlBroker);
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestMethod("POST");
 			con.setDoOutput(true);

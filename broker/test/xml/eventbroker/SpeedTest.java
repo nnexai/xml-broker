@@ -47,16 +47,17 @@ public class SpeedTest extends HttpServlet {
 	
 	private class MeasureThread extends Thread {
 		int ev, throu;
-		String con;
+		String con, statUrl;
 		
-		public MeasureThread(int ev, int throu, String con) {
+		public MeasureThread(int ev, int throu, String con, String statUrl) {
 			this.ev = ev;
 			this.throu = throu;
 			this.con = con;
+			this.statUrl = statUrl;
 		}
 		
 		public void run() {
-		startMeasurement(ev, throu, con);
+		startMeasurement(ev, throu, con, statUrl);
 		};
 	};
 
@@ -67,8 +68,12 @@ public class SpeedTest extends HttpServlet {
 		if (running.compareAndSet(false, true)) {
 
 			int events = 0x1000, throughput = -1;
-			String connector = "PooledHTTPDeliverer";
+			String connector = "PooledHTTPDeliverer", statisticsUrl = "http://localhost:8080/speed-statistics/SpeedStatistics";
 
+			String statsUrlS = req.getParameter("test.url");
+			if (statsUrlS != null && !"".equals(statsUrlS))
+				statisticsUrl = statsUrlS;
+			
 			String conS = req.getParameter("test.type");
 			if (conS != null && !"".equals(conS))
 				connector = conS;
@@ -82,7 +87,7 @@ public class SpeedTest extends HttpServlet {
 				events = Integer.valueOf(evtCntS);
 
 			// start run
-			new MeasureThread(events, throughput, connector).start(); 
+			new MeasureThread(events, throughput, connector, statisticsUrl).start(); 
 
 			resp.setStatus(HttpServletResponse.SC_OK);
 		} else {
@@ -90,7 +95,7 @@ public class SpeedTest extends HttpServlet {
 		}
 	}
 
-	public void startMeasurement(int noOfEvents, int throuput, String connector) {
+	public void startMeasurement(int noOfEvents, int throuput, String connector, String statisticsURL) {
 		stats = null;
 		//error = null;
 
@@ -105,7 +110,7 @@ public class SpeedTest extends HttpServlet {
 			dynRegF.setAccessible(true);
 			DynamicRegistration dynReg = (DynamicRegistration) dynRegF
 					.get(broker);
-			byte[] regEvent = ("<HTTPConnector type=\"" + connector + "\" event=\"timed-event\" url='http://localhost:8080/speed-statistics/SpeedStatistics'/>")
+			byte[] regEvent = ("<HTTPConnector type=\"" + connector + "\" event=\"timed-event\" url=\""+statisticsURL+"\"/>")
 					.getBytes("UTF-8");
 			dynReg.subscribe(new ByteInputStream(regEvent, regEvent.length),
 					"XMLBroker/speed-test/1");

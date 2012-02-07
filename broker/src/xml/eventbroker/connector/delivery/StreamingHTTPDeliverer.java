@@ -74,6 +74,7 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 		}
 
 		public PersistentConnection(URI urlString) throws IOException {
+			System.out.println(urlString);
 			url = urlString.toURL();
 			connect();
 		}

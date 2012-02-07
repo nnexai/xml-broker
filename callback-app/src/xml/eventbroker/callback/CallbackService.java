@@ -46,12 +46,14 @@ public class CallbackService extends HttpServlet {
 	private static final Logger logger = Logger.getAnonymousLogger();
 
 	private LongPollMap lpm;
-
+	private String xmlBroker;
+	
 	private ExecutorService pool;
 
 	@Override
 	public void init() throws ServletException {
 		super.init();
+		xmlBroker = getInitParameter("xmlbroker");
 		pool = Executors.newCachedThreadPool();
 		lpm = new LongPollMap();
 		factory.setValidating(false);
@@ -213,7 +215,7 @@ public class CallbackService extends HttpServlet {
 		private void proxyRequest(String string) {
 			URL url;
 			try {
-				url = new URL("http://localhost:8080/broker/XMLEventBroker/");
+				url = new URL(xmlBroker);
 				HttpURLConnection con = (HttpURLConnection) url
 						.openConnection();
 				con.setRequestMethod("POST");

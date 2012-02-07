@@ -140,6 +140,7 @@ public class XMLEventBroker extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		final PrintWriter writer = resp.getWriter();
+		resp.setContentType("text/html");
 		writer.append("<html><body>");
 		writer.append("<table>");
 		writer.append("<tr><th>Event</th><th>URI</th><th>Service</th></tr>");
