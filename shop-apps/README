@@ -1,0 +1,20 @@
+The shop environment consists of 5 services:
+- Bank
+- Mail
+- TimerService
+- ParcelService
+- Shop
+
+
+Required libs:
+- JDom
+(I think that's all)
+
+
+Broker registrations: 
+<HTTPConnector event="mail" id="1" url='http://localhost:8080/TomcatTest/Mail'/>
+<HTTPConnector event="transfer" id="1" url='http://localhost:8080/TomcatTest/Bank'/>
+<HTTPConnector event="shop" id="1" url='http://localhost:8080/Logging-app/XMLEventExample'/>
+<HTTPConnector event="parcel" id="1" url='http://localhost:8080/TomcatTest/ParcelService'/>
+<HTTPConnector event="alarm-registration" id="1" url='http://localhost:8080/TomcatTest/TimerService'/>
+<HTTPConnector event="alarm" id="1" url='http://localhost:8080/TomcatTest/ParcelService'/>
