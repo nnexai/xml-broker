@@ -1,1 +1,9 @@
 xml-broker -- a collection of some example projects to get started with programming the client, the broker and services that may register with the broker
+
+Since the project has been ported to maven, building should be quite easy. Just download a current Maven version from http://maven.apache.org/download.html (>=3.0.0), extract the files to your favorite directory and add Mavens bin/ directory to your PATH.
+
+Using the Terminal, navigate to your local copy of the project and run "mvn package" and all the sub-projects will be compiled to jar / war files located inside the <sub-project>/target/ directory. 
+
+For Eclipse Maven Integration for Eclipse (m2e) and Maven Integration for WTP should both be installed to make Eclipse Maven aware. After Eclipse is setup proparly, add the projects by using "Import..." --> "Maven" --> "Existing Maven Projects". Enter the path to your local copy of this project and you should see all subprojects listed.
+
+   Have fun =)
