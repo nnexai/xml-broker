@@ -89,6 +89,7 @@ public class TimerService extends HttpServlet {
 		
 		writer.flush();
 		
+		response.setContentType("text/html");
 		response.setStatus(HttpServletResponse.SC_OK);
 		
 	}

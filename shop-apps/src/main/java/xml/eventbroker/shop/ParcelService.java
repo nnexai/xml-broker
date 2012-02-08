@@ -29,7 +29,7 @@ public class ParcelService extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	private String eventBrokerURL;
-	private String myURL = "http://localhost:8080/TomcatTest/ParcelService";
+	private String myURL = "http://localhost:8080/shop-apps/ParcelService";
 			
 	private Map<Integer, Parcel> parcels = new HashMap<Integer,Parcel>(); 
 	
@@ -63,6 +63,7 @@ public class ParcelService extends HttpServlet {
 		
 		writer.flush();
 		
+		resp.setContentType("text/html");
 		resp.setStatus(HttpServletResponse.SC_OK);
 	
 	}

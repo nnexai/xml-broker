@@ -23,6 +23,7 @@
 		<module>logging-app</module>
 		<module>eventsender-app</module>
 		<module>speed-statistic-app</module>
+		<module>shop-apps</module>
 	</modules>
 
 	<dependencies>

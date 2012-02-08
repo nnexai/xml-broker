@@ -87,7 +87,7 @@ public class Shop extends HttpServlet {
 		} else {
 			PrintWriter writer = resp.getWriter();		
 			writer.append("<html><body><h2>Shop</h2><br>");
-			writer.append("<form method='get' action='http://localhost:8080/TomcatTest/Shop/order'><table><tr>");
+			writer.append("<form method='get' action='http://localhost:8080/shop-apps/Shop/order'><table><tr>");
 			writer.append("<td><b>Produkt</b></td><td><b>Preis</b></td><td><b>Menge</b></td>");
 			writer.append("</tr>");
 			
@@ -104,6 +104,7 @@ public class Shop extends HttpServlet {
 			writer.flush();
 		}
 		
+		resp.setContentType("text/html");
 		resp.setStatus(HttpServletResponse.SC_OK);
 	
 	}

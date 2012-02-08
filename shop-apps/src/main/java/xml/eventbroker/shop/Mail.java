@@ -74,6 +74,7 @@ public class Mail extends HttpServlet {
 			writer.flush();
 		}
 		
+		resp.setContentType("text/html");
 		resp.setStatus(HttpServletResponse.SC_OK);
 	
 	}
