@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<register>
+		<HTTPConnector event="test" uri="log/test" url='http://localhost:8080/logging-app/XMLEventExample'/>
+		<HTTPConnector event="request" uri="log/request" url='http://localhost:8080/logging-app/XMLEventExample'/>
+		<HTTPConnector event="callback" uri="log/callback" url='http://localhost:8080/logging-app/XMLEventExample'/>
+		<HTTPConnector event="callback" uri="callback" url='http://localhost:8080/callback-app/XMLCallback'/>
+		<HTTPConnector event="request" uri="echo/request" url='http://localhost:8080/callback-app/SimpleReply'/>
+		<HTTPConnector event="jython" uri="evaluate/jython" url='http://localhost:8080/callback-app/JythonReply'/>
+		<HTTPConnector event="jython" uri="log/jython" url='http://localhost:8080/logging-app/XMLEventExample'/>
+		<XPathFilter event="test" uri="log/filtered/test" filter="@id = 1">
+		<HTTPConnector url='http://localhost:8080/logging-app/XMLEventExample'/>
+		</XPathFilter>
+	</register>
+</config>

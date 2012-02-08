@@ -14,3 +14,21 @@ xml-broker -- a small java-servlet to distribute xml-events to registered web-se
 	connections are not automatically closed. Management is left to the container issuing
 	timeouts etc.. still there is currently no way to find out if a connection timed out on
 	the endpoints side. Thus some events will be lost during reconnection!
+	
+--	maven
+	to deploy to out server just use "mvn tomcat:deploy" .. for this to work you have to insert
+	the necessary credentials in your ~/.m2/settings.xml file. When installing maven this file
+	usually does not exist. Just create it with the following content:
+	<settings>
+	  <servers>
+	    <server>
+	      <id>mytomcat</id>
+	      <username>XXXXXX</username>
+	      <password>XXXXXX</password>
+	    </server>
+	  </servers>
+	</settings>
+	the username and password can be found on the server inside TOMCAT_DIR/conf/tomcat-users.xml
+	
+	If you just like to get a .war file, simply use "mvn package". The file can be found at
+	target/broker.war
