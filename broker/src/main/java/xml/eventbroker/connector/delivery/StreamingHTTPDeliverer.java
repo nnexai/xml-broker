@@ -83,9 +83,7 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 	@Override
 	public void init() {
 		map = Collections
-				.synchronizedMap(new LinkedHashMap<URI, PersistentConnection>() {
-
-				});
+				.synchronizedMap(new LinkedHashMap<URI, PersistentConnection>());
 	}
 
 	@Override

@@ -56,7 +56,7 @@ public class PooledHTTPDeliverer implements IHTTPDeliverer {
 		HttpPost httpPost = new HttpPost(url);
 		HttpEntity entity = new StringEntity(event);
 		httpPost.setEntity(entity);
-		byte[] response = httpClient.execute(httpPost, h);
+		httpClient.execute(httpPost, h);
 	}
 	
 	@Override

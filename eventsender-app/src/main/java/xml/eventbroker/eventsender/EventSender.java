@@ -1,19 +1,15 @@
 package xml.eventbroker.eventsender;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -23,7 +19,6 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.lang3.StringEscapeUtils;
 
 
 public class EventSender extends HttpServlet {
@@ -78,8 +73,6 @@ public class EventSender extends HttpServlet {
 		                	events = "<?xml version=\"1.0\" encoding=\"utf-8\"?><events>" + fieldvalue + "</events>";
 		                }		                
 		            } else {
-		                // Process form file field (input type="file").
-		                String fieldname = item.getFieldName();
 		                InputStream filecontent = item.getInputStream();
 		                BufferedReader br = new BufferedReader(new InputStreamReader(filecontent));
 		                String line;
