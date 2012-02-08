@@ -82,7 +82,7 @@ public class MultiXMLRootFilter extends FilterReader {
 			for (int i = pendingOffset; i < pendingOffset + pendingBytes; i++) {
 				char c = buf[i];
 
-				if (!Character.isSpaceChar(c)) {
+				if (!Character.isWhitespace(c)) {
 					if (DEBUG)
 						System.out.println("Skipped to [" + c + "] pendingO:"
 								+ pendingOffset + " pendingB:" + pendingBytes);
@@ -330,7 +330,7 @@ public class MultiXMLRootFilter extends FilterReader {
 
 		MultiXMLRootFilter in = new MultiXMLRootFilter(
 				new StringReader(
-						"  <!-- this is just a comment --> <a> </a> <log attr=\"This should be logged\">hallo Welt!<something /></log> <bla/>"),
+						"  <? irgendwas ?>\n <!-- this is just a comment --> <a> </a> <log attr=\"This should be logged\">hallo Welt!<something /></log> <bla/> \n\n  "),
 				0x10);
 
 		try {
