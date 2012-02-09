@@ -155,7 +155,7 @@ public class SpeedTest extends HttpServlet {
 			pM.invoke(
 					broker,
 					new ByteArrayInputStream(
-							"<?xml version=\"1.0\" encoding=\"UTF-8\"?><events><warmup/></events>"
+							"<?xml version=\"1.0\" encoding=\"UTF-8\"?><warmup/>"
 									.getBytes("UTF-8")));
 			Thread.sleep(1000);
 

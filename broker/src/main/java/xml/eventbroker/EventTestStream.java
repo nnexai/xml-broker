@@ -44,7 +44,7 @@ public class EventTestStream extends InputStream {
 
 	private boolean generateEvent() throws UnsupportedEncodingException {
 		
-		if (currentEventNo > maxEventNo)
+		if (currentEventNo >= maxEventNo)
 			return false;
 		else if (currentEvent != null && currentEventOffset < currentEvent.length)
 			return true;
@@ -86,9 +86,7 @@ public class EventTestStream extends InputStream {
 		String str;
 
 		if (currentEventNo == -1) {
-			str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><events>";
-		} else if (currentEventNo == maxEventNo) {
-			str = "</events>";
+			str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 		} else {
 			strB.append("<timed-event send-time=\"").append(System.nanoTime())
 					.append("\" id=\"").append(currentEventNo).append("\"/>");

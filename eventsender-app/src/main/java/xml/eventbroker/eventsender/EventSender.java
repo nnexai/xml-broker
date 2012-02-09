@@ -48,7 +48,7 @@ public class EventSender extends HttpServlet {
 		writer.append("<html><body>");
 		writer.append("<form action='EventSender' method='post' enctype='multipart/form-data'>" +
 					 "Select event file (xml): <input type='file' name='eventfile'> <br/><br/><b>OR</b><br/><br/>" + 
-					  "&lt;events&gt;<br /> <textarea name='events' cols='75' rows='15'></textarea><br/>&lt;/events&gt;"+
+					  "<textarea name='events' cols='75' rows='15'></textarea><br/>"+
 				"<br/><br/><input type='submit' value='senden'> <input type='reset' /></form>");
 		writer.append("</body></html>");
 		
@@ -70,7 +70,7 @@ public class EventSender extends HttpServlet {
 		                String fieldname = item.getFieldName();
 		                String fieldvalue = item.getString();
 		                if (fieldname.equals("events") && ! fieldvalue.equals("")) {
-		                	events = "<?xml version=\"1.0\" encoding=\"utf-8\"?><events>" + fieldvalue + "</events>";
+		                	events = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + fieldvalue;
 		                }		                
 		            } else {
 		                InputStream filecontent = item.getInputStream();

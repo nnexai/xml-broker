@@ -9,7 +9,7 @@ public class MultiXMLRootFilter extends FilterReader {
 	private static final boolean DEBUG = false;
 
 	static enum ParserStatus {
-		PARSING, ERROR, TAG_OPEN, COMMENT_INTRO_1, COMMENT_INTRO_2, COMMENT, COMMENT_OUTRO_1, COMMENT_OUTRO_2, INSTRUCTION, INSTRUCTION_OUTRO, ELEMENT, ATTRIB_VALUE_DOUBLE_QUOTE, ELEMENT_CLOSING, ELEMENT_SINGLE_TAG, CDATA_INTRO_1, CDATA, CDATA_OUTRO_2, CDATA_OUTRO_1, ATTRIB_VALUE_SINGLE_QUOTE,
+		PARSING, ERROR, TAG_OPEN, COMMENT_INTRO_1, COMMENT_INTRO_2, COMMENT, COMMENT_OUTRO_1, COMMENT_OUTRO_2, INSTRUCTION, INSTRUCTION_OUTRO, ELEMENT, ATTRIB_VALUE_DOUBLE_QUOTE, ELEMENT_CLOSING, ELEMENT_SINGLE_TAG, CDATA_INTRO_1, CDATA, CDATA_OUTRO_2, CDATA_OUTRO_1, ATTRIB_VALUE_SINGLE_QUOTE, ELEMENT_NAME
 	}
 
 	private char[] buf;
@@ -34,8 +34,8 @@ public class MultiXMLRootFilter extends FilterReader {
 	 * if the underlying stream is closed. As a side effect whitespace between
 	 * elements is skipped.
 	 * 
-	 * @return True, if an unread, non-whitespace character is found.
-	 * 		   False, if the stream ended before more data was found.
+	 * @return True, if an unread, non-whitespace character is found. False, if
+	 *         the stream ended before more data was found.
 	 * @throws IOException
 	 */
 	public boolean hasNext() throws IOException {
@@ -102,7 +102,7 @@ public class MultiXMLRootFilter extends FilterReader {
 		if (stop) {
 			if (DEBUG)
 				System.out
-				.println("Stop on pending request! -- read again to continue");
+						.println("Stop on pending request! -- read again to continue");
 			stop = false;
 			return -1;
 		}
@@ -161,6 +161,20 @@ public class MultiXMLRootFilter extends FilterReader {
 		stop = true;
 	}
 
+	StringBuilder currentRootName = new StringBuilder(100);
+
+	/**
+	 * Return the name of the currently parsed root element. For this to work,
+	 * the parser must have completed parsing at least the full name - to make
+	 * sure this has happend first read until -1 is returned and then
+	 * (afterwards) get the name.
+	 * 
+	 * @return Name of the last parsed root element
+	 */
+	public String getCurrentRootName() {
+		return currentRootName.toString();
+	}
+
 	private void parse(int r, int i) {
 		ParserStatus old = status;
 
@@ -187,7 +201,12 @@ public class MultiXMLRootFilter extends FilterReader {
 				status = ParserStatus.ELEMENT_CLOSING;
 				break;
 			default:
-				status = ParserStatus.ELEMENT;
+				if (level == 0) {
+					currentRootName.setLength(0);
+					currentRootName.append(c);
+					status = ParserStatus.ELEMENT_NAME;
+				} else
+					status = ParserStatus.ELEMENT;
 				break;
 			}
 			break;
@@ -276,6 +295,23 @@ public class MultiXMLRootFilter extends FilterReader {
 				status = ParserStatus.INSTRUCTION;
 			break;
 
+		case ELEMENT_NAME:
+			switch (c) {
+			case '>':
+				level++;
+				status = ParserStatus.PARSING;
+				break;
+			case '/':
+				status = ParserStatus.ELEMENT_SINGLE_TAG;
+				break;
+			default:
+				if (Character.isWhitespace(c))
+					status = ParserStatus.ELEMENT;
+				else
+					currentRootName.append(c);
+			}
+			break;
+
 		case ELEMENT:
 			switch (c) {
 			case '>':
@@ -342,7 +378,8 @@ public class MultiXMLRootFilter extends FilterReader {
 				while ((r = in.read(buf)) >= 0) {
 					b.append(buf, 0, r);
 				}
-				System.out.println("--> " + b.toString());
+				System.out.println("--> " + b.toString() + " "
+						+ in.currentRootName);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
