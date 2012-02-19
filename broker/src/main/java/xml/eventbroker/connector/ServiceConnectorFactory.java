@@ -7,6 +7,7 @@ import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,9 +32,15 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 
 	Map<String, IHTTPDeliverer> m;
 
-	public void init() {
+	private ExecutorService pool;
+	
+	public ServiceConnectorFactory(ExecutorService pool) {
+		this.pool = pool;
 		m = new HashMap<String, IHTTPDeliverer>();
-
+	}
+	
+	public void init() {
+		
 		IHTTPDeliverer d;
 
 		// TODO: Find solution for hardcoding these entries (and their "get"
@@ -50,12 +57,17 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 		d.init();
 		m.put(d.getClass().getSimpleName(), d);
 
-		d = new NettyStreamingHTTPDeliverer();
+		d = new NettyStreamingHTTPDeliverer(pool);
 		d.init();
 		m.put(d.getClass().getSimpleName(), d);
 		
 	}
-
+	
+	public void flushDeliverer() {
+		NettyStreamingHTTPDeliverer d = (NettyStreamingHTTPDeliverer) m.get("NettyStreamingHTTPDeliverer");
+		d.waitForPending();
+	}
+	
 	public void shutdown() {
 		for (IHTTPDeliverer del : m.values()) {
 			del.shutdown();

@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import xml.eventbroker.EventTestStream.IEventStreamStatusUpdate;
+import xml.eventbroker.connector.ServiceConnectorFactory;
 
 public class SpeedTest extends HttpServlet {
 
@@ -121,6 +122,10 @@ public class SpeedTest extends HttpServlet {
 			poolF.setAccessible(true);
 			ExecutorService pool = (ExecutorService) poolF.get(broker);
 
+			Field factoryF = clazz.getDeclaredField("factory");
+			factoryF.setAccessible(true);
+			ServiceConnectorFactory factory = (ServiceConnectorFactory) factoryF.get(broker);
+			
 			final TestStatistics stats_local = new TestStatistics(noOfEvents);
 			stats = stats_local;
 
@@ -165,11 +170,16 @@ public class SpeedTest extends HttpServlet {
 					throuput));
 			stats_local.processingTimeInMs = ((System.nanoTime() - start) / 1000000);
 
-			pool.shutdown();
-			if (!pool.awaitTermination(10, TimeUnit.MINUTES))
-				pool.shutdownNow();
+			// wait for all pending sends to finish
+			System.out.println("Waiting");
+			factory.flushDeliverer();
+			System.out.println("Finished");
 			stats_local.sendingTimeInMs = ((System.nanoTime() - start) / 1000000);
-			System.out.println("Finished!");
+			
+			factory.shutdown();
+			pool.shutdown();
+			if (!pool.awaitTermination(1, TimeUnit.HOURS))
+				pool.shutdownNow();
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {

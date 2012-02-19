@@ -36,11 +36,16 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 
 			con.setRequestMethod("POST");
 			con.setDoOutput(true);
-			con.setDoInput(false);
+			con.setDoInput(true);
 			con.setChunkedStreamingMode(-1);
-			con.setRequestProperty("Connection", "keep-alive");
-			con.setConnectTimeout(3 * 1000); // ONE-Hour
-			con.setRequestProperty("Content-type", "text/xml");
+//			con.setFixedLengthStreamingMode(MSG1.length+MSG2.length);
+			con.setUseCaches(false);
+			// needed, so that the sockets buffer is not reused!
+			con.setRequestProperty("CONNECTION", "close");
+			// logging service should be set to timeout after ~20 seconds.. 
+			con.setConnectTimeout(2 * 1000); // 2 Seconds
+			con.setReadTimeout(30*60*1000); // 30 Minutes for reading Answer
+			con.setRequestProperty("CONTENT-TYPE", "text/xml");
 			
 			OutputStream out = con.getOutputStream();
 			BufferedOutputStream bos = new BufferedOutputStream(out);

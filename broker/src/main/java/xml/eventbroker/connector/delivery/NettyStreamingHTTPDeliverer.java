@@ -3,11 +3,10 @@ package xml.eventbroker.connector.delivery;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -19,6 +18,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
@@ -36,19 +36,16 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 
+	private volatile boolean isWaiting = false;
+	
 	class PersistentConnection {
 
-		private static final int DISCONNECTED = 0;
-		private static final int CONNECTED = 2;
-
-		AtomicInteger state = new AtomicInteger(DISCONNECTED);
 		private Channel connection;
 		private final URI url;
 
-		private void connect() throws IOException {
+		private volatile boolean connected = false;
 
-			if (state.get() == CONNECTED)
-				return;
+		private void connect() throws IOException {
 
 			logger.info("Connecting to " + url.toString());
 
@@ -61,7 +58,6 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 						public void operationComplete(ChannelFuture future)
 								throws Exception {
 							System.out.println(future.toString());
-							state.set(DISCONNECTED);
 						}
 					});
 
@@ -77,17 +73,16 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 					"text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2");
 			req.setHeader(HttpHeaders.Names.TRANSFER_ENCODING, "chunked");
 
-			connection.write(req).awaitUninterruptibly();
-			if (state.compareAndSet(DISCONNECTED, CONNECTED)) {
-			} else {
-				logger.warning("Called connect on already connected or pending connection");
-			}
+			connection.write(req);
+			connected = true;
+
 		}
 
 		public void disconnect() {
-			if (state.compareAndSet(CONNECTED, DISCONNECTED)
-					|| state.compareAndSet(CONNECTED, DISCONNECTED)) {
+			synchronized (this) {
+				connection.write(HttpChunk.LAST_CHUNK);
 				connection.close().awaitUninterruptibly();
+				connected = false;
 			}
 		}
 
@@ -95,26 +90,49 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 			this.url = url;
 		}
 
-		public void pushEvent(String event) throws IOException {
-			if (state.get() == DISCONNECTED || connection == null
-					|| !connection.isConnected()) {
+		public void pushEvent(final String event) throws IOException {
+			if (!connected) {
 				synchronized (this) {
-					connect();
+					if (!connected)
+						connect();
 				}
 			}
-			HttpChunk chunk = new DefaultHttpChunk(
+
+			final HttpChunk chunk = new DefaultHttpChunk(
 					ChannelBuffers.copiedBuffer(event.getBytes("UTF-8")));
-			connection.write(chunk).awaitUninterruptibly();
+
+			// } while (!(connection.write(chunk).awaitUninterruptibly()
+			// .isSuccess() || state.get() == FORCE_CLOSED));
+
+			// pending++
+			counter.incrementAndGet();
+			// System.out.println("++"+counter.get());
+			connection.write(chunk).addListener(new ChannelFutureListener() {
+				@Override
+				public void operationComplete(ChannelFuture result)
+						throws Exception {
+					if (!result.isSuccess()) {
+					}
+
+					// 1 send --> notify if last
+					if (counter.decrementAndGet() == 0 && isWaiting) {
+						// System.out.println("--"+counter.get());
+						
+						synchronized (lock) {
+							lock.notifyAll();
+						}
+					}
+				}
+			});
 		}
 	}
 
 	public static class ClientMessageHandler extends SimpleChannelHandler {
-		// @Override
-		// public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent
-		// e)
-		// throws Exception {
-		// e.getCause().printStackTrace();
-		// }
+		@Override
+		public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+				throws Exception {
+			System.out.println(e.getCause().toString());
+		}
 
 		@Override
 		public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
@@ -124,16 +142,36 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 		}
 	}
 
-	Map<URI, PersistentConnection> map;
+	ConcurrentHashMap<URI, PersistentConnection> map;
 
-	final ClientBootstrap bootstrap = new ClientBootstrap(
-			new NioClientSocketChannelFactory(Executors.newCachedThreadPool(),
-					Executors.newCachedThreadPool()));
+	final ClientBootstrap bootstrap;
+	final AtomicLong counter;
+	final Object lock;
+
+	public void waitForPending() {
+		isWaiting = true;
+		while (counter.get() > 0)
+			synchronized (lock) {
+				try {
+					lock.wait(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		isWaiting = false;
+	}
+
+	public NettyStreamingHTTPDeliverer(ExecutorService pool) {
+		// TODO Auto-generated constructor stub
+		bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
+				Executors.newCachedThreadPool(), pool));
+		counter = new AtomicLong(0);
+		lock = new Object();
+	}
 
 	@Override
 	public void init() {
-		map = Collections
-				.synchronizedMap(new LinkedHashMap<URI, PersistentConnection>());
+		map = new ConcurrentHashMap<URI, PersistentConnection>();
 
 		bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 
@@ -162,12 +200,13 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 	@Override
 	public void deliver(String event, URI urlString) throws IOException {
 		PersistentConnection con;
-		synchronized (map) {
-			if ((con = map.get(urlString)) == null) {
-				con = new PersistentConnection(urlString);
-				map.put(urlString, con);
-			}
+		if ((con = map.get(urlString)) == null) {
+			con = new PersistentConnection(urlString);
+			PersistentConnection cached = map.putIfAbsent(urlString, con);
+			if (cached != null)
+				con = cached;
 		}
+
 		con.pushEvent(event);
 	}
 
