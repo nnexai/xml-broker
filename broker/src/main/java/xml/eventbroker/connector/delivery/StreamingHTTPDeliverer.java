@@ -9,10 +9,12 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import sun.net.www.protocol.http.HttpURLConnection;
+import xml.eventbroker.DeliveryStatistics;
 
 public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 
@@ -38,7 +40,6 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 			con.setDoOutput(true);
 			con.setDoInput(true);
 			con.setChunkedStreamingMode(-1);
-//			con.setFixedLengthStreamingMode(MSG1.length+MSG2.length);
 			con.setUseCaches(false);
 			// needed, so that the sockets buffer is not reused!
 			con.setRequestProperty("CONNECTION", "close");
@@ -84,9 +85,11 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 	}
 
 	Map<URI, PersistentConnection> map;
-
+	DeliveryStatistics stats;
+	
 	@Override
-	public void init() {
+	public void init(DeliveryStatistics stats) {
+		this.stats = stats;
 		map = Collections
 				.synchronizedMap(new LinkedHashMap<URI, PersistentConnection>());
 	}
@@ -102,7 +105,7 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 			}
 		}
 	}
-
+	
 	@Override
 	public void deliver(String event, URI urlString) throws IOException {
 		PersistentConnection con;
@@ -113,8 +116,9 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 			}
 		}
 		con.pushEvent(event);
+		stats.finishedDelivery();
 	}
-	
+
 	@Override
 	public String toString() {
 		return "[streaming-http-request]";

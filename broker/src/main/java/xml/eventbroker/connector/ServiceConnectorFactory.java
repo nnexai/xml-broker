@@ -21,6 +21,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import xml.eventbroker.DeliveryStatistics;
 import xml.eventbroker.connector.delivery.IHTTPDeliverer;
 import xml.eventbroker.connector.delivery.NettyStreamingHTTPDeliverer;
 import xml.eventbroker.connector.delivery.PooledHTTPDeliverer;
@@ -32,10 +33,12 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 
 	Map<String, IHTTPDeliverer> m;
 
-	private ExecutorService pool;
+	private final ExecutorService pool;
+	private final DeliveryStatistics stats;
 	
-	public ServiceConnectorFactory(ExecutorService pool) {
+	public ServiceConnectorFactory(ExecutorService pool, DeliveryStatistics stats) {
 		this.pool = pool;
+		this.stats = stats;
 		m = new HashMap<String, IHTTPDeliverer>();
 	}
 	
@@ -46,26 +49,21 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 		// TODO: Find solution for hardcoding these entries (and their "get"
 		// counterpart"
 		d = new PooledHTTPDeliverer();
-		d.init();
+		d.init(stats);
 		m.put(d.getClass().getSimpleName(), d);
 
 		d = new SimpleHTTPDeliverer();
-		d.init();
+		d.init(stats);
 		m.put(d.getClass().getSimpleName(), d);
 
 		d = new StreamingHTTPDeliverer();
-		d.init();
+		d.init(stats);
 		m.put(d.getClass().getSimpleName(), d);
 
 		d = new NettyStreamingHTTPDeliverer(pool);
-		d.init();
+		d.init(stats);
 		m.put(d.getClass().getSimpleName(), d);
 		
-	}
-	
-	public void flushDeliverer() {
-		NettyStreamingHTTPDeliverer d = (NettyStreamingHTTPDeliverer) m.get("NettyStreamingHTTPDeliverer");
-		d.waitForPending();
 	}
 	
 	public void shutdown() {

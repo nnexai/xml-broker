@@ -31,6 +31,8 @@ import xml.eventbroker.connector.ServiceConnectorFactory;
 public class XMLEventBroker extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getAnonymousLogger();
+	
+	private DeliveryStatistics stats;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -56,7 +58,9 @@ public class XMLEventBroker extends HttpServlet {
 		pool = Executors.newFixedThreadPool(desiredThreads);
         //pool = Executors.newSingleThreadExecutor();
         
-		factory = new ServiceConnectorFactory(pool);
+		stats = new DeliveryStatistics();
+		
+		factory = new ServiceConnectorFactory(pool, stats);
 		factory.init();
 
 		regServ = new RegisteredServices();
@@ -106,17 +110,12 @@ public class XMLEventBroker extends HttpServlet {
 								domdescr = new DOMEventDescription(doc, event);
 							}
 							ev = domdescr;
-						}
-						service.deliver(ev);
-						
-//						EventDeliveryTask task = new EventDeliveryTask(ev,
-//								service);
-//						pool.execute(task);
+						}					
+						EventDeliveryTask task = new EventDeliveryTask(ev, service);
+						stats.addDelivery();
+						pool.execute(task);
 						
 					} catch (SAXException e) {
-						e.printStackTrace();
-					} 
-					catch (IOException e) {
 						e.printStackTrace();
 					} 
 				}
@@ -139,7 +138,7 @@ public class XMLEventBroker extends HttpServlet {
 				req.getInputStream());
 		processXML(inStream);
 		//Maybe we want to wait for all messages to be delivered
-		factory.flushDeliverer();
+		stats.waitForPendingDeliveries();
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 

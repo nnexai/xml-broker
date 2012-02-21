@@ -126,6 +126,10 @@ public class SpeedTest extends HttpServlet {
 			factoryF.setAccessible(true);
 			ServiceConnectorFactory factory = (ServiceConnectorFactory) factoryF.get(broker);
 			
+			Field delivStatsF = clazz.getDeclaredField("stats");
+			delivStatsF.setAccessible(true);
+			DeliveryStatistics delivStats = (DeliveryStatistics) delivStatsF.get(broker); 
+			
 			final TestStatistics stats_local = new TestStatistics(noOfEvents);
 			stats = stats_local;
 
@@ -172,7 +176,7 @@ public class SpeedTest extends HttpServlet {
 
 			// wait for all pending sends to finish
 			System.out.println("Waiting");
-			factory.flushDeliverer();
+			delivStats.waitForPendingDeliveries();
 			System.out.println("Finished");
 			stats_local.sendingTimeInMs = ((System.nanoTime() - start) / 1000000);
 			
