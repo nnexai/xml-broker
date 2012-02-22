@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -39,14 +38,12 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 
-	private volatile boolean isWaiting = false;
-	
 	class PersistentConnection {
 
 		private Channel connection;
 		private final URI url;
 
-		private AtomicBoolean connected = new AtomicBoolean(false);
+		private final AtomicBoolean connected = new AtomicBoolean(false);
 
 		private void connect() throws IOException {
 
@@ -145,9 +142,10 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 	public NettyStreamingHTTPDeliverer(ExecutorService pool) {
 		// TODO Auto-generated constructor stub
 		bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
-				Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
+				Executors.newCachedThreadPool(),
+				Executors.newCachedThreadPool()));
 	}
-	
+
 	@Override
 	public void init(DeliveryStatistics stats) {
 		this.stats = stats;

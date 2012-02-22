@@ -108,6 +108,7 @@ public class SpeedStatisticsApp extends HttpServlet {
 			String cnt = req.getParameter("event_count");
 			String throughput = req.getParameter("throughput");
 			String deliverer = req.getParameter("deliverer");
+			String serviceCount = req.getParameter("service_count");
 			boolean reset = "on".equals(req.getParameter("reset_statistics"));
 
 			if (reset)
@@ -120,7 +121,7 @@ public class SpeedStatisticsApp extends HttpServlet {
 					.append(cnt);
 			params.append("&test.throughput=").append(throughput);
 			params.append("&test.type=").append(deliverer);
-
+			params.append("&test.service_count=").append(serviceCount);
 			params.append("&test.url=").append("http://")
 					.append(req.getServerName()).append(':')
 					.append(req.getServerPort()).append(req.getContextPath())

@@ -1,16 +1,20 @@
 package xml.eventbroker;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 public class EventTestStream extends InputStream {
-	
+
 	public static interface IEventStreamStatusUpdate {
-		void updateProgress(int currentEventNo, int maxEventNo, double percentage);
-		void signalThroughputNotAchieved(int currentEventNo, int sendPerWait, int desiredEventsPerSecond, double achievedEventsPerSecond);
+		void updateProgress(int currentEventNo, int maxEventNo,
+				double percentage);
+
+		void signalThroughputNotAchieved(int currentEventNo, int sendPerWait,
+				int desiredEventsPerSecond, double achievedEventsPerSecond);
 	}
-	
+
 	private static final int WAIT_PER_X_EVENTS = 100;
 	private final long waitTime;
 	private final int desiredEventsPerSecond;
@@ -20,19 +24,21 @@ public class EventTestStream extends InputStream {
 
 	private int currentEventNo = -1;
 	private int maxEventNo = 0;
-	
+
 	private final IEventStreamStatusUpdate statUpdateCallback;
 
-	public EventTestStream(int noOfEvents, IEventStreamStatusUpdate statUpdateCallback) {
+	public EventTestStream(int noOfEvents,
+			IEventStreamStatusUpdate statUpdateCallback) {
 		this(noOfEvents, statUpdateCallback, Integer.MAX_VALUE);
 	}
 
-	public EventTestStream(int noOfEvents, IEventStreamStatusUpdate statUpdateCallback, int throughput) {
+	public EventTestStream(int noOfEvents,
+			IEventStreamStatusUpdate statUpdateCallback, int throughput) {
 		this.maxEventNo = noOfEvents;
 		this.statUpdateCallback = statUpdateCallback;
 		this.desiredEventsPerSecond = throughput;
-		
-		if(throughput > 0 )
+
+		if (throughput > 0)
 			waitTime = 1000 * WAIT_PER_X_EVENTS / throughput;
 		else
 			waitTime = 0;
@@ -43,25 +49,28 @@ public class EventTestStream extends InputStream {
 	long lastTime;
 
 	private boolean generateEvent() throws UnsupportedEncodingException {
-		
+
 		if (currentEventNo >= maxEventNo) {
 			statUpdateCallback.updateProgress(currentEventNo, maxEventNo, 100);
 			return false;
-		}
-		else if (currentEvent != null && currentEventOffset < currentEvent.length)
+		} else if (currentEvent != null
+				&& currentEventOffset < currentEvent.length)
 			return true;
-		
+
 		/*
+		 * // Update Progress if ((statUpdateCallback != null) &&
+		 * (currentEventNo % Math.max(maxEventNo / 50, 2) == 0)) {
+		 * statUpdateCallback.updateProgress(currentEventNo, maxEventNo,
+		 * 100.*currentEventNo/maxEventNo); }
+		 */
 		// Update Progress
-		if ((statUpdateCallback != null) && (currentEventNo % Math.max(maxEventNo / 50, 2) == 0)) {
-			statUpdateCallback.updateProgress(currentEventNo, maxEventNo, 100.*currentEventNo/maxEventNo);
+		if ((statUpdateCallback != null)
+				&& (currentEventNo
+						% Math.min(Math.max(maxEventNo / 100, 2), 500) == 0)) {
+			statUpdateCallback.updateProgress(currentEventNo, maxEventNo, 100.
+					* currentEventNo / maxEventNo);
 		}
-		*/
-		// Update Progress
-		if ((statUpdateCallback != null) && (currentEventNo % Math.min(Math.max(maxEventNo / 100, 2), 500) == 0)) {
-			statUpdateCallback.updateProgress(currentEventNo, maxEventNo, 100.*currentEventNo/maxEventNo);
-		}
-		
+
 		// Wait if we send too much
 		if (currentEventNo == 0)
 			lastTime = System.nanoTime();
@@ -76,21 +85,24 @@ public class EventTestStream extends InputStream {
 					e.printStackTrace();
 				}
 			else if (statUpdateCallback != null) {
-				final double achievedEventsPerSecond = WAIT_PER_X_EVENTS * 1000. / timeDiffinMs;
-				statUpdateCallback.signalThroughputNotAchieved(currentEventNo, WAIT_PER_X_EVENTS, desiredEventsPerSecond, achievedEventsPerSecond);
+				final double achievedEventsPerSecond = WAIT_PER_X_EVENTS
+						* 1000. / timeDiffinMs;
+				statUpdateCallback.signalThroughputNotAchieved(currentEventNo,
+						WAIT_PER_X_EVENTS, desiredEventsPerSecond,
+						achievedEventsPerSecond);
 			}
 
 			lastTime = System.nanoTime();
 		}
 
-		
 		// Generate Event
 		String str;
 
 		if (currentEventNo == -1) {
 			str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 		} else {
-			strB.append("<timed-event send-time=\"").append(System.nanoTime())
+			strB.append('<').append(getEventName(currentEventNo));
+			strB.append(" send-time=\"").append(System.nanoTime())
 					.append("\" id=\"").append(currentEventNo).append("\"/>");
 			str = strB.toString();
 			strB.setLength(0);
@@ -99,6 +111,10 @@ public class EventTestStream extends InputStream {
 		currentEventOffset = 0;
 		currentEventNo++;
 		return true;
+	}
+
+	protected String getEventName(long currentEventNo) {
+		return "timed-event";
 	}
 
 	@Override
@@ -122,7 +138,8 @@ public class EventTestStream extends InputStream {
 	}
 
 	public static void main(String[] args) {
-		InputStreamReader isr = new InputStreamReader(new EventTestStream(10, null));
+		InputStreamReader isr = new InputStreamReader(new EventTestStream(10,
+				null));
 		StringBuilder str = new StringBuilder(0x1000);
 		char[] buf = new char[100];
 		int read;

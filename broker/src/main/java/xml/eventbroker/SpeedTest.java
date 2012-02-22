@@ -28,8 +28,8 @@ public class SpeedTest extends HttpServlet {
 
 	// Immutable Data Object
 	TestStatistics stats = null;
-	
-	//Object error = null; unused atm
+
+	// Object error = null; unused atm
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -40,21 +40,23 @@ public class SpeedTest extends HttpServlet {
 			out.write(stats.toXML().getBytes("UTF-8"));
 		}
 	}
-	
+
 	private class MeasureThread extends Thread {
-		int ev, throu;
+		int ev, throu, serviceCount;
 		String con, statUrl;
-		
-		public MeasureThread(int ev, int throu, String con, String statUrl) {
+
+		public MeasureThread(int ev, int throu, String con, String statUrl,
+				int serviceCount) {
 			this.ev = ev;
 			this.throu = throu;
 			this.con = con;
 			this.statUrl = statUrl;
+			this.serviceCount = serviceCount;
 		}
-		
+
 		@Override
 		public void run() {
-		startMeasurement(ev, throu, con, statUrl);
+			startMeasurement(ev, throu, con, statUrl, serviceCount);
 		};
 	};
 
@@ -64,13 +66,13 @@ public class SpeedTest extends HttpServlet {
 
 		if (running.compareAndSet(false, true)) {
 
-			int events = 0x1000, throughput = -1;
+			int events = 0x1000, throughput = -1, serviceCount = 1;
 			String connector = "PooledHTTPDeliverer", statisticsUrl = "http://localhost:8080/speed-statistics/SpeedStatistics";
 
 			String statsUrlS = req.getParameter("test.url");
 			if (statsUrlS != null && !"".equals(statsUrlS))
 				statisticsUrl = statsUrlS;
-			
+
 			String conS = req.getParameter("test.type");
 			if (conS != null && !"".equals(conS))
 				connector = conS;
@@ -83,8 +85,13 @@ public class SpeedTest extends HttpServlet {
 			if (evtCntS != null && !"".equals(evtCntS))
 				events = Integer.valueOf(evtCntS);
 
+			String serviceCountS = req.getParameter("test.service_count");
+			if (serviceCountS != null && !"".equals(serviceCountS))
+				serviceCount = Integer.valueOf(serviceCountS);
+
 			// start run
-			new MeasureThread(events, throughput, connector, statisticsUrl).start(); 
+			new MeasureThread(events, throughput, connector, statisticsUrl,
+					serviceCount).start();
 
 			resp.setStatus(HttpServletResponse.SC_OK);
 		} else {
@@ -92,9 +99,29 @@ public class SpeedTest extends HttpServlet {
 		}
 	}
 
-	public void startMeasurement(int noOfEvents, int throuput, String connector, String statisticsURL) {
+	private void registerServices(String connector, String statisticsURL,
+			DynamicRegistration dynReg, int serviceCount)
+			throws UnsupportedEncodingException {
+		if (serviceCount == 1) {
+			byte[] regEvent = ("<HTTPConnector type=\"" + connector
+					+ "\" event=\"timed-event\" url=\"" + statisticsURL + "/\"/>")
+					.getBytes("UTF-8");
+			dynReg.subscribe(new ByteArrayInputStream(regEvent),
+					"XMLBroker/speed-test/");
+		} else
+			for (int i = 1; i <= serviceCount; i++) {
+				byte[] regEvent = ("<HTTPConnector type=\"" + connector
+						+ "\" event=\"timed-event" + i + "\" url=\""
+						+ statisticsURL + '/' + i + "\"/>").getBytes("UTF-8");
+				dynReg.subscribe(new ByteArrayInputStream(regEvent),
+						"XMLBroker/speed-test/" + i);
+			}
+	}
+
+	public void startMeasurement(int noOfEvents, int throuput,
+			String connector, String statisticsURL, final int serviceCount) {
 		stats = null;
-		//error = null;
+		// error = null;
 
 		final XMLEventBroker broker = new XMLEventBroker();
 		Class<? extends XMLEventBroker> clazz = broker.getClass();
@@ -107,10 +134,8 @@ public class SpeedTest extends HttpServlet {
 			dynRegF.setAccessible(true);
 			DynamicRegistration dynReg = (DynamicRegistration) dynRegF
 					.get(broker);
-			byte[] regEvent = ("<HTTPConnector type=\"" + connector + "\" event=\"timed-event\" url=\""+statisticsURL+"\"/>")
-					.getBytes("UTF-8");
-			dynReg.subscribe(new ByteArrayInputStream(regEvent),
-					"XMLBroker/speed-test/1");
+
+			registerServices(connector, statisticsURL, dynReg, serviceCount);
 
 			Method pM = clazz
 					.getDeclaredMethod("processXML", InputStream.class);
@@ -124,12 +149,14 @@ public class SpeedTest extends HttpServlet {
 
 			Field factoryF = clazz.getDeclaredField("factory");
 			factoryF.setAccessible(true);
-			ServiceConnectorFactory factory = (ServiceConnectorFactory) factoryF.get(broker);
-			
+			ServiceConnectorFactory factory = (ServiceConnectorFactory) factoryF
+					.get(broker);
+
 			Field delivStatsF = clazz.getDeclaredField("stats");
 			delivStatsF.setAccessible(true);
-			DeliveryStatistics delivStats = (DeliveryStatistics) delivStatsF.get(broker); 
-			
+			DeliveryStatistics delivStats = (DeliveryStatistics) delivStatsF
+					.get(broker);
+
 			final TestStatistics stats_local = new TestStatistics(noOfEvents);
 			stats = stats_local;
 
@@ -139,9 +166,9 @@ public class SpeedTest extends HttpServlet {
 				public void updateProgress(int currentEventNo, int maxEventNo,
 						double percentage) {
 					/*
-					 System.out.println((int) (percentage * 10 + 0.5) / 10.
-							+ "% [" + currentEventNo + '/' + maxEventNo + ']');
-					*/
+					 * System.out.println((int) (percentage * 10 + 0.5) / 10. +
+					 * "% [" + currentEventNo + '/' + maxEventNo + ']');
+					 */
 					stats_local.currentEvent = currentEventNo;
 					stats_local.progress = percentage;
 				}
@@ -170,8 +197,20 @@ public class SpeedTest extends HttpServlet {
 
 			// Start
 			long start = System.nanoTime();
-			pM.invoke(broker, new EventTestStream(noOfEvents, statCallback,
-					throuput));
+			EventTestStream eventTestStream = new EventTestStream(noOfEvents,
+					statCallback, throuput);
+			if (serviceCount > 1) {
+				eventTestStream = new EventTestStream(noOfEvents, statCallback,
+						throuput) {
+
+					@Override
+					protected String getEventName(long currentEventNo) {
+						return "timed-event"
+								+ (currentEventNo % serviceCount + 1);
+					}
+				};
+			}
+			pM.invoke(broker, eventTestStream);
 			stats_local.processingTimeInMs = ((System.nanoTime() - start) / 1000000);
 
 			// wait for all pending sends to finish
@@ -179,7 +218,7 @@ public class SpeedTest extends HttpServlet {
 			delivStats.waitForPendingDeliveries();
 			System.out.println("Finished");
 			stats_local.sendingTimeInMs = ((System.nanoTime() - start) / 1000000);
-			
+
 			factory.shutdown();
 			pool.shutdown();
 			if (!pool.awaitTermination(1, TimeUnit.HOURS))

@@ -33,7 +33,6 @@ public class DynamicRegistration {
 	}
 
 	public boolean subscribe(InputStream in, String path) {
-		logger.info("Registering one service");
 		if (path != null) {
 			String[] split = path.split("/", 2);
 
@@ -45,6 +44,8 @@ public class DynamicRegistration {
 
 					AbstractServiceEntry serviceEntry = fac.getServiceEntry(
 							doc.getDocumentElement(), uri);
+					logger.info("Registering one service ["
+							+ serviceEntry.getEvent() + "] -> " + serviceEntry);
 					return regServices.registerService(serviceEntry);
 				} catch (SAXException e) {
 					e.printStackTrace();
