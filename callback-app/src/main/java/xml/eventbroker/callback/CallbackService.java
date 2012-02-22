@@ -178,10 +178,7 @@ public class CallbackService extends HttpServlet {
 							cbElement.setAttribute("id", Long.toString(index));
 							ele.appendChild(cbElement);
 
-							Element root = doc.createElement("elements");
-							root.appendChild(ele);
-
-							t.transform(new DOMSource(root), new StreamResult(
+							t.transform(new DOMSource(ele), new StreamResult(
 									sw));
 							proxyRequest(sw.toString());
 							break;

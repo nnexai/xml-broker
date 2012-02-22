@@ -9,10 +9,12 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import sun.net.www.protocol.http.HttpURLConnection;
+import xml.eventbroker.DeliveryStatistics;
 
 public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 
@@ -36,11 +38,15 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 
 			con.setRequestMethod("POST");
 			con.setDoOutput(true);
-			con.setDoInput(false);
+			con.setDoInput(true);
 			con.setChunkedStreamingMode(-1);
-			con.setRequestProperty("Connection", "keep-alive");
-			con.setConnectTimeout(3 * 1000); // ONE-Hour
-			con.setRequestProperty("Content-type", "text/xml");
+			con.setUseCaches(false);
+			// needed, so that the sockets buffer is not reused!
+			con.setRequestProperty("CONNECTION", "close");
+			// logging service should be set to timeout after ~20 seconds.. 
+			con.setConnectTimeout(2 * 1000); // 2 Seconds
+			con.setReadTimeout(30*60*1000); // 30 Minutes for reading Answer
+			con.setRequestProperty("CONTENT-TYPE", "text/xml");
 			
 			OutputStream out = con.getOutputStream();
 			BufferedOutputStream bos = new BufferedOutputStream(out);
@@ -79,9 +85,11 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 	}
 
 	Map<URI, PersistentConnection> map;
-
+	DeliveryStatistics stats;
+	
 	@Override
-	public void init() {
+	public void init(DeliveryStatistics stats) {
+		this.stats = stats;
 		map = Collections
 				.synchronizedMap(new LinkedHashMap<URI, PersistentConnection>());
 	}
@@ -97,7 +105,7 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 			}
 		}
 	}
-
+	
 	@Override
 	public void deliver(String event, URI urlString) throws IOException {
 		PersistentConnection con;
@@ -108,8 +116,9 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 			}
 		}
 		con.pushEvent(event);
+		stats.finishedDelivery();
 	}
-	
+
 	@Override
 	public String toString() {
 		return "[streaming-http-request]";

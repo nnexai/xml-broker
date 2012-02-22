@@ -7,11 +7,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
@@ -187,7 +185,7 @@ public class ParcelService extends HttpServlet {
 			BufferedOutputStream bos = new BufferedOutputStream(out);
 			OutputStreamWriter writer = new OutputStreamWriter(bos, "UTF-8");
 			
-			writer.append("<?xml version=\"1.0\" encoding=\"utf-8\"?><events>" + event + "</events>");
+			writer.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>" + event);
 			writer.flush();
 			writer.close();			
 		} catch (IOException e) {

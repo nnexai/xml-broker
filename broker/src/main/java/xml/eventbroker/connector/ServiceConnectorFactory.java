@@ -7,6 +7,7 @@ import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,6 +21,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import xml.eventbroker.DeliveryStatistics;
 import xml.eventbroker.connector.delivery.IHTTPDeliverer;
 import xml.eventbroker.connector.delivery.NettyStreamingHTTPDeliverer;
 import xml.eventbroker.connector.delivery.PooledHTTPDeliverer;
@@ -31,31 +33,39 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 
 	Map<String, IHTTPDeliverer> m;
 
-	public void init() {
+	private final ExecutorService pool;
+	private final DeliveryStatistics stats;
+	
+	public ServiceConnectorFactory(ExecutorService pool, DeliveryStatistics stats) {
+		this.pool = pool;
+		this.stats = stats;
 		m = new HashMap<String, IHTTPDeliverer>();
-
+	}
+	
+	public void init() {
+		
 		IHTTPDeliverer d;
 
 		// TODO: Find solution for hardcoding these entries (and their "get"
 		// counterpart"
 		d = new PooledHTTPDeliverer();
-		d.init();
+		d.init(stats);
 		m.put(d.getClass().getSimpleName(), d);
 
 		d = new SimpleHTTPDeliverer();
-		d.init();
+		d.init(stats);
 		m.put(d.getClass().getSimpleName(), d);
 
 		d = new StreamingHTTPDeliverer();
-		d.init();
+		d.init(stats);
 		m.put(d.getClass().getSimpleName(), d);
 
-		d = new NettyStreamingHTTPDeliverer();
-		d.init();
+		d = new NettyStreamingHTTPDeliverer(pool);
+		d.init(stats);
 		m.put(d.getClass().getSimpleName(), d);
 		
 	}
-
+	
 	public void shutdown() {
 		for (IHTTPDeliverer del : m.values()) {
 			del.shutdown();

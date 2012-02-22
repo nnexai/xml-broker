@@ -14,13 +14,17 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.util.EntityUtils;
 
+import xml.eventbroker.DeliveryStatistics;
+
 public class PooledHTTPDeliverer implements IHTTPDeliverer {
 	private HttpClient httpClient;
 	private ClientConnectionManager cm;
 	private ResponseHandler<byte[]> h;
-
+	DeliveryStatistics stats;
+	
 	@Override
-	public void init() {
+	public void init(DeliveryStatistics stats) {
+		this.stats = stats;
 		/*SchemeRegistry schemeRegistry = new SchemeRegistry();
 		schemeRegistry.register(new Scheme("http", 80, PlainSocketFactory
 				.getSocketFactory()));*/
@@ -57,6 +61,7 @@ public class PooledHTTPDeliverer implements IHTTPDeliverer {
 		HttpEntity entity = new StringEntity(event);
 		httpPost.setEntity(entity);
 		httpClient.execute(httpPost, h);
+		stats.finishedDelivery();
 	}
 	
 	@Override

@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import xml.eventbroker.connector.AbstractServiceEntry;
 
+
 public class EventDeliveryTask implements Runnable {
 
 	private static final Logger logger = Logger.getAnonymousLogger();

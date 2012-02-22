@@ -87,6 +87,7 @@ public class Shop extends HttpServlet {
 		} else {
 			PrintWriter writer = resp.getWriter();		
 			writer.append("<html><body><h2>Shop</h2><br>");
+			//TODO: FIX HARDCODED URL!
 			writer.append("<form method='get' action='http://localhost:8080/shop-apps/Shop/order'><table><tr>");
 			writer.append("<td><b>Produkt</b></td><td><b>Preis</b></td><td><b>Menge</b></td>");
 			writer.append("</tr>");
@@ -116,7 +117,8 @@ public class Shop extends HttpServlet {
 			SAXBuilder builder = new SAXBuilder();
 			Document eventdoc = builder.build(request.getReader());
 			Element event = eventdoc.getRootElement();			 
-			if (event.getName().equals("transfer")){				
+			if (event.getName().equals("transfer")){			
+				//TODO: REMOVE? these do nothing
 				String from = event.getAttributeValue("from"); 
 				String to = event.getAttributeValue("to"); 
 				Double amount = Double.parseDouble(event.getAttributeValue("amount"));		
@@ -150,7 +152,7 @@ public class Shop extends HttpServlet {
 			BufferedOutputStream bos = new BufferedOutputStream(out);
 			OutputStreamWriter writer = new OutputStreamWriter(bos, "UTF-8");
 			
-			writer.append("<?xml version=\"1.0\" encoding=\"utf-8\"?><events>" + event + "</events>");
+			writer.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>" + event);
 			writer.flush();
 			writer.close();			
 		} catch (IOException e) {

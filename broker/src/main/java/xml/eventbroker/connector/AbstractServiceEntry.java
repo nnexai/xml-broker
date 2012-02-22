@@ -1,6 +1,7 @@
 package xml.eventbroker.connector;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 public abstract class AbstractServiceEntry {
 	private final String event, uri;

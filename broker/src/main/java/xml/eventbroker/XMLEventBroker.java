@@ -31,6 +31,8 @@ import xml.eventbroker.connector.ServiceConnectorFactory;
 public class XMLEventBroker extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getAnonymousLogger();
+	
+	private DeliveryStatistics stats;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -56,7 +58,9 @@ public class XMLEventBroker extends HttpServlet {
 		pool = Executors.newFixedThreadPool(desiredThreads);
         //pool = Executors.newSingleThreadExecutor();
         
-		factory = new ServiceConnectorFactory();
+		stats = new DeliveryStatistics();
+		
+		factory = new ServiceConnectorFactory(pool, stats);
 		factory.init();
 
 		regServ = new RegisteredServices();
@@ -74,6 +78,7 @@ public class XMLEventBroker extends HttpServlet {
 	@Override
 	public void destroy() {
 		super.destroy();
+		factory.shutdown();
 		try {
 			pool.shutdown();
 			if (!pool.awaitTermination(4, TimeUnit.SECONDS))
@@ -82,7 +87,6 @@ public class XMLEventBroker extends HttpServlet {
 			logger.log(Level.WARNING, "Unable to shutdown Threadpool", e);
 		}
 
-		factory.shutdown();
 
 	}
 
@@ -106,20 +110,20 @@ public class XMLEventBroker extends HttpServlet {
 								domdescr = new DOMEventDescription(doc, event);
 							}
 							ev = domdescr;
-						}
-
-						EventDeliveryTask task = new EventDeliveryTask(ev,
-								service);
+						}					
+						EventDeliveryTask task = new EventDeliveryTask(ev, service);
+						stats.addDelivery();
 						pool.execute(task);
+						
 					} catch (SAXException e) {
 						e.printStackTrace();
-					}
+					} 
 				}
 			}
 		};
 
 		evP.parseStream(in);
-
+		
 		try {
 			in.close();
 		} catch (IOException e) {
@@ -133,6 +137,8 @@ public class XMLEventBroker extends HttpServlet {
 		final BufferedInputStream inStream = new BufferedInputStream(
 				req.getInputStream());
 		processXML(inStream);
+		//Maybe we want to wait for all messages to be delivered
+		stats.waitForPendingDeliveries();
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 

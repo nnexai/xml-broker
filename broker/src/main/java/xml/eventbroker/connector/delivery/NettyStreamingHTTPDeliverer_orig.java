@@ -6,7 +6,8 @@ import java.net.URI;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
@@ -35,18 +36,20 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 
 import xml.eventbroker.DeliveryStatistics;
 
-public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
+public class NettyStreamingHTTPDeliverer_orig implements IHTTPDeliverer {
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 
-	private volatile boolean isWaiting = false;
-	
 	class PersistentConnection {
 
+		private static final int DISCONNECTED = 0;
+		private static final int CONNECTING = 1;
+		private static final int CONNECTED = 2;
+		private static final int FORCE_CLOSED = 3;
+
+		AtomicInteger state = new AtomicInteger(DISCONNECTED);
 		private Channel connection;
 		private final URI url;
-
-		private AtomicBoolean connected = new AtomicBoolean(false);
 
 		private void connect() throws IOException {
 
@@ -61,6 +64,7 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 						public void operationComplete(ChannelFuture future)
 								throws Exception {
 							System.out.println(future.toString());
+							state.set(DISCONNECTED);
 						}
 					});
 
@@ -77,15 +81,20 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 			req.setHeader(HttpHeaders.Names.TRANSFER_ENCODING, "chunked");
 
 			connection.write(req);
-			connected.set(true);
-
+			if (state.compareAndSet(CONNECTING, CONNECTED)) {
+			}
+			if (state.get() == DISCONNECTED) {
+				logger.warning("Closed during connect");
+			} else {
+				logger.warning("Called connect on already connected or pending connection");
+			}
 		}
 
 		public void disconnect() {
-			synchronized (this) {
+			if (state.compareAndSet(CONNECTED, FORCE_CLOSED)
+					|| state.compareAndSet(CONNECTING, FORCE_CLOSED)) {
 				connection.write(HttpChunk.LAST_CHUNK);
 				connection.close().awaitUninterruptibly();
-				connected.set(false);
 			}
 		}
 
@@ -94,11 +103,9 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 		}
 
 		public void pushEvent(final String event) throws IOException {
-			if (!connected.get()) {
-				synchronized (this) {
-					if (!connected.get())
-						connect();
-				}
+			while (state.get() != CONNECTED) {
+				if (state.compareAndSet(DISCONNECTED, CONNECTING))
+					connect();
 			}
 
 			final HttpChunk chunk = new DefaultHttpChunk(
@@ -107,15 +114,15 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 			// } while (!(connection.write(chunk).awaitUninterruptibly()
 			// .isSuccess() || state.get() == FORCE_CLOSED));
 
-			// System.out.println("++"+counter.get());
 			connection.write(chunk).addListener(new ChannelFutureListener() {
 				@Override
 				public void operationComplete(ChannelFuture result)
 						throws Exception {
+					if (state.get() == FORCE_CLOSED)
+						return;
 					if (!result.isSuccess()) {
-						logger.warning("Dropped one Package");
-					}
-
+						System.out.println("E");
+					} 
 					stats.finishedDelivery();
 				}
 			});
@@ -140,14 +147,15 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 	ConcurrentHashMap<URI, PersistentConnection> map;
 
 	final ClientBootstrap bootstrap;
-	DeliveryStatistics stats;
 
-	public NettyStreamingHTTPDeliverer(ExecutorService pool) {
+	DeliveryStatistics stats;
+	
+	public NettyStreamingHTTPDeliverer_orig(ExecutorService pool) {
 		// TODO Auto-generated constructor stub
 		bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
-				Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
+				Executors.newCachedThreadPool(), pool));
 	}
-	
+
 	@Override
 	public void init(DeliveryStatistics stats) {
 		this.stats = stats;
@@ -164,7 +172,6 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 				return pipeline;
 			}
 		});
-
 	}
 
 	@Override

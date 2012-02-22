@@ -9,6 +9,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.logging.Logger;
 
+import xml.eventbroker.DeliveryStatistics;
+
 public class SimpleHTTPDeliverer implements IHTTPDeliverer {
 	private static final Logger logger = Logger.getAnonymousLogger();
 	
@@ -32,14 +34,19 @@ public class SimpleHTTPDeliverer implements IHTTPDeliverer {
 		writer.flush();
 		writer.close();
 		
+		stats.finishedDelivery();
+		
 		con.getInputStream();
 		int rCode;
 		if( (rCode = con.getResponseCode()) != HttpURLConnection.HTTP_OK)
 			logger.warning("Service answered: "+rCode);
 	}
+	
+	DeliveryStatistics stats;
 
 	@Override
-	public void init() {
+	public void init(DeliveryStatistics stats) {
+		this.stats = stats;
 	}
 
 	@Override

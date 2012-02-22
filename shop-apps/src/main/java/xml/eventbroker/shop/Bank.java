@@ -144,7 +144,7 @@ public class Bank extends HttpServlet {
 			BufferedOutputStream bos = new BufferedOutputStream(out);
 			OutputStreamWriter writer = new OutputStreamWriter(bos, "UTF-8");
 			
-			writer.append("<?xml version=\"1.0\" encoding=\"utf-8\"?><events>" + event + "</events>");
+			writer.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>" + event);
 			writer.flush();
 			writer.close();			
 		} catch (IOException e) {
