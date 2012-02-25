@@ -20,4 +20,7 @@ public abstract class Pattern {
 			str.append((char) ('a' + generateNextIndex(i, 20)));
 		return str.toString();
 	}
+
+	@Override
+	public abstract Pattern clone();
 }

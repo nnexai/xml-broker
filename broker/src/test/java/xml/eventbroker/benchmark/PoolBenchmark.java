@@ -16,21 +16,33 @@ public class PoolBenchmark {
 	}
 
 	public static void main(String[] args) {
-		int messageCount = 1000000;
-		int connectionCount = 1000;
+		int messageCount = 10000000;
+		int connectionCount = 400;
 		int maxPersistentConnections = 100;
-		Pattern pattern = new BurstPattern();
+
+		Pattern pattern = new RandomPattern();
 		System.out.println("Used Pattern example: " + pattern);
 
 		Strategy strat = new LRUStrategy(maxPersistentConnections);
 		runTest(messageCount, connectionCount, maxPersistentConnections,
 				pattern, strat);
+
+		pattern = pattern.clone();
 		strat = new FCFSStrategy(maxPersistentConnections);
 		runTest(messageCount, connectionCount, maxPersistentConnections,
 				pattern, strat);
-		strat = new FCFSWithAgingStrategy(maxPersistentConnections, 300);
+
+		pattern = pattern.clone();
+		strat = new FCFSWithAgingStrategy(maxPersistentConnections, 500);
 		runTest(messageCount, connectionCount, maxPersistentConnections,
 				pattern, strat);
+
+		pattern = pattern.clone();
+		strat = new OwnScoringStrategy(maxPersistentConnections, 20000);
+		runTest(messageCount, connectionCount, maxPersistentConnections,
+				pattern, strat);
+
+		pattern = pattern.clone();
 		strat = new NoStreamingStrategy(maxPersistentConnections);
 		runTest(messageCount, connectionCount, maxPersistentConnections,
 				pattern, strat);

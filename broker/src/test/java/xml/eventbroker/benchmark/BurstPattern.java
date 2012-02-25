@@ -1,6 +1,6 @@
 package xml.eventbroker.benchmark;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -9,6 +9,7 @@ public class BurstPattern extends Pattern {
 	static class BurstData {
 		int index;
 		int sequenceLength;
+		boolean longSeq = false;
 	}
 
 	int curBurstNo;
@@ -18,53 +19,52 @@ public class BurstPattern extends Pattern {
 	public BurstPattern() {
 		rnd = new Random();
 		curBurstNo = 0;
-		l = new LinkedList<BurstData>();
-		lastRemoved = new LinkedList<Integer>();
-	}
-
-	List<BurstData> l;
-	List<Integer> lastRemoved;
-
-	private void generateNew(int maxIndex) {
-		BurstData d = new BurstData();
-		d.index = rnd.nextFloat() > 0.9 ? getRemovedIndex() : rnd
-				.nextInt(maxIndex);
-		d.sequenceLength = 1;
-		d.sequenceLength += rnd.nextInt(10);
-		if (rnd.nextFloat() > 0.99)
-			d.sequenceLength += rnd.nextInt(400) + 100;
-
-		l.add(d);
-	}
-
-	private int getRemovedIndex() {
-		return lastRemoved.size() > 0 ? lastRemoved.remove(rnd
-				.nextInt(lastRemoved.size())) : 0;
+		l = new ArrayList<BurstData>(100);
 	}
 
 	@Override
+	public Pattern clone() {
+		return new BurstPattern();
+	}
+
+	List<BurstData> l;
+
+	private void generateNew(int maxIndex) {
+		BurstData d = new BurstData();
+		d.index = rnd.nextInt(maxIndex);
+		d.sequenceLength = 1;
+		d.sequenceLength += rnd.nextInt(10);
+		if (rnd.nextFloat() > 0.99) {
+			// long sequence
+			d.sequenceLength += rnd.nextInt(1000) + 100;
+			d.longSeq = true;
+			longSeq++;
+		} else
+			shortSeq++;
+		l.add(d);
+	}
+
+	int longSeq = 0;
+	int shortSeq = 0;
+
+	@Override
 	public int generateNextIndex(int currentNo, int maxIndex) {
-		if (l.size() <= 2 || rnd.nextInt(20) == 0) {
+		if (l.size() == 0 || (l.size() < 2 * maxIndex && rnd.nextFloat() < 0.2)) {
 			generateNew(maxIndex);
 		}
 
 		int curIndex = curBurstNo % l.size();
-		if (rnd.nextFloat() > 0.6)
-			curBurstNo++;
+		// if (rnd.nextFloat() > 0.2)
+		curBurstNo++;
 		BurstData d = l.get(curIndex);
-		if (--d.sequenceLength <= 0) {
-			lastRemoved.add(l.remove(curIndex).index);
-		}
-
+		if (d.sequenceLength-- <= 0)
+			l.remove(curIndex);
 		return d.index;
 	}
 
 	@Override
 	public String toString() {
 		String str = super.toString();
-		curBurstNo = 0;
-		l = new LinkedList<BurstData>();
-		lastRemoved = new LinkedList<Integer>();
 		return str;
 	}
 }

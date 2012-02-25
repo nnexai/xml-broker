@@ -11,6 +11,11 @@ public class RandomPattern extends Pattern {
 	}
 
 	@Override
+	public Pattern clone() {
+		return new RandomPattern();
+	}
+
+	@Override
 	public int generateNextIndex(int currentNo, int maxIndex) {
 		return rnd.nextInt(maxIndex);
 	}

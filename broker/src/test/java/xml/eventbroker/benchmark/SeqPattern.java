@@ -9,6 +9,11 @@ public class SeqPattern extends Pattern {
 	}
 
 	@Override
+	public Pattern clone() {
+		return new SeqPattern(seqLength);
+	}
+
+	@Override
 	public int generateNextIndex(int currentNo, int maxIndex) {
 		return (currentNo / seqLength) % maxIndex;
 	}

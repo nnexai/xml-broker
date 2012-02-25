@@ -7,4 +7,8 @@ public class InterleavedPattern extends Pattern {
 		return currentNo % maxIndex;
 	}
 
+	@Override
+	public Pattern clone() {
+		return new InterleavedPattern();
+	}
 }
