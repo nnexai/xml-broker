@@ -31,7 +31,8 @@ import xml.eventbroker.connector.ServiceConnectorFactory;
 public class XMLEventBroker extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getAnonymousLogger();
-	
+	private static final boolean WAIT_FOR_DELIVERY = true;
+
 	private DeliveryStatistics stats;
 
 	/**
@@ -51,15 +52,16 @@ public class XMLEventBroker extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		Runtime runtime = Runtime.getRuntime();        
-        int nrOfProcessors = runtime.availableProcessors();
-        int desiredThreads = Math.max(nrOfProcessors+1, 1);
-        System.out.println("Available cores: "+nrOfProcessors+" allocating threadpool of size "+desiredThreads);
+		Runtime runtime = Runtime.getRuntime();
+		int nrOfProcessors = runtime.availableProcessors();
+		int desiredThreads = Math.max(nrOfProcessors + 1, 1);
+		System.out.println("Available cores: " + nrOfProcessors
+				+ " allocating threadpool of size " + desiredThreads);
 		pool = Executors.newFixedThreadPool(desiredThreads);
-        //pool = Executors.newSingleThreadExecutor();
-        
+		// pool = Executors.newSingleThreadExecutor();
+
 		stats = new DeliveryStatistics();
-		
+
 		factory = new ServiceConnectorFactory(pool, stats);
 		factory.init();
 
@@ -87,7 +89,6 @@ public class XMLEventBroker extends HttpServlet {
 			logger.log(Level.WARNING, "Unable to shutdown Threadpool", e);
 		}
 
-
 	}
 
 	private void processXML(final InputStream in) {
@@ -110,20 +111,30 @@ public class XMLEventBroker extends HttpServlet {
 								domdescr = new DOMEventDescription(doc, event);
 							}
 							ev = domdescr;
-						}					
-						EventDeliveryTask task = new EventDeliveryTask(ev, service);
+						}
+						EventDeliveryTask task = new EventDeliveryTask(ev,
+								service);
 						stats.addDelivery();
 						pool.execute(task);
-						
+
 					} catch (SAXException e) {
 						e.printStackTrace();
-					} 
+					}
 				}
+
+				// wait if sending-queue is to long
+				if (WAIT_FOR_DELIVERY)
+					while (stats.counter.get() > 10000) {
+						try {
+							Thread.sleep(100);
+						} catch (InterruptedException e) {
+						}
+					}
 			}
 		};
 
 		evP.parseStream(in);
-		
+
 		try {
 			in.close();
 		} catch (IOException e) {
@@ -137,7 +148,7 @@ public class XMLEventBroker extends HttpServlet {
 		final BufferedInputStream inStream = new BufferedInputStream(
 				req.getInputStream());
 		processXML(inStream);
-		//Maybe we want to wait for all messages to be delivered
+		// Maybe we want to wait for all messages to be delivered
 		stats.waitForPendingDeliveries();
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
