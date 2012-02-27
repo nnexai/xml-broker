@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -57,7 +58,7 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 						@Override
 						public void operationComplete(ChannelFuture future)
 								throws Exception {
-							System.out.println(future.toString());
+							logger.info("Channel closed!");
 						}
 					});
 
@@ -68,6 +69,7 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 			req.setChunked(true);
 			req.setHeader(HttpHeaders.Names.HOST,
 					url.getHost() + ':' + url.getPort());
+			req.setHeader(HttpHeaders.Names.CONNECTION, "close");
 			req.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/xml");
 			req.setHeader(HttpHeaders.Names.ACCEPT,
 					"text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2");
@@ -80,7 +82,7 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 
 		public void disconnect() {
 			synchronized (this) {
-				connection.write(HttpChunk.LAST_CHUNK);
+				connection.write(HttpChunk.LAST_CHUNK).awaitUninterruptibly();
 				connection.close().awaitUninterruptibly();
 				connected.set(false);
 			}
@@ -101,18 +103,14 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 			final HttpChunk chunk = new DefaultHttpChunk(
 					ChannelBuffers.copiedBuffer(event.getBytes("UTF-8")));
 
-			// } while (!(connection.write(chunk).awaitUninterruptibly()
-			// .isSuccess() || state.get() == FORCE_CLOSED));
-
-			// System.out.println("++"+counter.get());
 			connection.write(chunk).addListener(new ChannelFutureListener() {
 				@Override
 				public void operationComplete(ChannelFuture result)
 						throws Exception {
 					if (!result.isSuccess()) {
-						logger.warning("Dropped one Package");
+						logger.log(Level.WARNING, "Dropped one Package",
+								result.getCause());
 					}
-
 					stats.finishedDelivery();
 				}
 			});
@@ -123,13 +121,12 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 		@Override
 		public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
 				throws Exception {
-			System.out.println(e.getCause().toString());
+			logger.log(Level.WARNING, "Exception in ChannelHandler", e);
 		}
 
 		@Override
 		public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
 				throws Exception {
-			// HttpResponse httpResponse = (HttpResponse) e.getMessage();
 			e.getChannel().close();
 		}
 	}
@@ -140,7 +137,6 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 	DeliveryStatistics stats;
 
 	public NettyStreamingHTTPDeliverer(ExecutorService pool) {
-		// TODO Auto-generated constructor stub
 		bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
 				Executors.newCachedThreadPool(),
 				Executors.newCachedThreadPool()));
