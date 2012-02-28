@@ -118,7 +118,7 @@ public class XMLEventBroker extends HttpServlet {
 						pool.execute(task);
 
 					} catch (SAXException e) {
-						e.printStackTrace();
+						logger.log(Level.WARNING, "Unable to generate DOM", e);
 					}
 				}
 
@@ -148,8 +148,6 @@ public class XMLEventBroker extends HttpServlet {
 		final BufferedInputStream inStream = new BufferedInputStream(
 				req.getInputStream());
 		processXML(inStream);
-		// Maybe we want to wait for all messages to be delivered
-		stats.waitForPendingDeliveries();
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 
