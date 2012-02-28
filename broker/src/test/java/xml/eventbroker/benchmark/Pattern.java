@@ -7,8 +7,9 @@ public abstract class Pattern {
 				generateNextIndex(currentNo, maxIndex));
 	}
 
+	// ~40000 events / second
 	long absoluteSendTime(int currentNo, int maxIndex) {
-		return (long) 10 * currentNo;
+		return (long) 25 * currentNo;
 	};
 
 	abstract int generateNextIndex(int currentNo, int maxIndex);
@@ -16,8 +17,8 @@ public abstract class Pattern {
 	@Override
 	public String toString() {
 		StringBuilder str = new StringBuilder(1000);
-		for (int i = 0; i < 1000; i++)
-			str.append((char) ('a' + generateNextIndex(i, 20)));
+		for (int i = 0; i < 0x100; i++)
+			str.append((char) ('a' + generateNextIndex(i, 10)));
 		return str.toString();
 	}
 

@@ -16,9 +16,9 @@ public class PoolBenchmark {
 	}
 
 	public static void main(String[] args) {
-		int messageCount = 10000000;
-		int connectionCount = 400;
-		int maxPersistentConnections = 100;
+		int messageCount = 1000000;
+		int connectionCount = 5000;
+		int maxPersistentConnections = 299;
 
 		Pattern pattern = new RandomPattern();
 		System.out.println("Used Pattern example: " + pattern);
@@ -33,12 +33,13 @@ public class PoolBenchmark {
 				pattern, strat);
 
 		pattern = pattern.clone();
-		strat = new FCFSWithAgingStrategy(maxPersistentConnections, 500);
+		strat = new FCFSWithAgingStrategy(maxPersistentConnections, 500 * 1000);
 		runTest(messageCount, connectionCount, maxPersistentConnections,
 				pattern, strat);
 
 		pattern = pattern.clone();
-		strat = new OwnScoringStrategy(maxPersistentConnections, 20000);
+		strat = new OwnScoringStrategy(maxPersistentConnections,
+				5 * 1000 * 1000);
 		runTest(messageCount, connectionCount, maxPersistentConnections,
 				pattern, strat);
 

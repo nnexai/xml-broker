@@ -165,10 +165,6 @@ public class SpeedTest extends HttpServlet {
 				@Override
 				public void updateProgress(int currentEventNo, int maxEventNo,
 						double percentage) {
-					/*
-					 * System.out.println((int) (percentage * 10 + 0.5) / 10. +
-					 * "% [" + currentEventNo + '/' + maxEventNo + ']');
-					 */
 					stats_local.currentEvent = currentEventNo;
 					stats_local.progress = percentage;
 				}
@@ -177,11 +173,6 @@ public class SpeedTest extends HttpServlet {
 				public void signalThroughputNotAchieved(int currentEventNo,
 						int sendPerWait, int desiredEventsPerSecond,
 						double achievedEventsPerSecond) {
-					System.out.println("Only achieved "
-							+ (long) (achievedEventsPerSecond * 10 + 0.05)
-							/ 10.0 + '/' + desiredEventsPerSecond
-							+ " packets/s for the last " + sendPerWait
-							+ " packets.");
 				}
 			};
 			// TODO: WARMUP HERE

@@ -123,10 +123,10 @@ public class XMLEventBroker extends HttpServlet {
 				}
 
 				// wait if sending-queue is to long
-				if (WAIT_FOR_DELIVERY)
-					while (stats.counter.get() > 10000) {
+				if (WAIT_FOR_DELIVERY && stats.counter.get() > 10000)
+					while (stats.counter.get() > 0) {
 						try {
-							Thread.sleep(100);
+							Thread.sleep(50);
 						} catch (InterruptedException e) {
 						}
 					}

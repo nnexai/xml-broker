@@ -34,7 +34,7 @@ public class BurstPattern extends Pattern {
 		d.index = rnd.nextInt(maxIndex);
 		d.sequenceLength = 1;
 		d.sequenceLength += rnd.nextInt(10);
-		if (rnd.nextFloat() > 0.99) {
+		if (rnd.nextFloat() > 0.90) {
 			// long sequence
 			d.sequenceLength += rnd.nextInt(1000) + 100;
 			d.longSeq = true;
@@ -53,9 +53,8 @@ public class BurstPattern extends Pattern {
 			generateNew(maxIndex);
 		}
 
-		int curIndex = curBurstNo % l.size();
-		// if (rnd.nextFloat() > 0.2)
-		curBurstNo++;
+		int curIndex = curBurstNo++ % l.size();
+
 		BurstData d = l.get(curIndex);
 		if (d.sequenceLength-- <= 0)
 			l.remove(curIndex);
