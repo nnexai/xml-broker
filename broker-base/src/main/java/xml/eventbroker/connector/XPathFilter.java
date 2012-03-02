@@ -28,7 +28,8 @@ public class XPathFilter extends AbstractServiceEntry {
 		super(event, uri);
 		try {
 			StringBuilder str = new StringBuilder();
-			str.append('/').append(event).append('[').append(xml.getAttribute("filter")).append(']');
+			str.append('/').append(event).append('[')
+					.append(xml.getAttribute("filter")).append(']');
 			this.pathString = str.toString();
 			path = factory.newXPath().compile(pathString);
 
@@ -72,9 +73,9 @@ public class XPathFilter extends AbstractServiceEntry {
 		try {
 
 			result = (Node) path.evaluate(node, XPathConstants.NODE);
-			
+
 			if (result != null) {
-				Object resultB = result;
+				Object resultB = eventB;
 				if (!service.requiresDOM()) {
 					resultB = eventStr;
 				}
@@ -88,6 +89,6 @@ public class XPathFilter extends AbstractServiceEntry {
 
 	@Override
 	public String toString() {
-		return pathString+" > "+service;
+		return pathString + " > " + service;
 	}
 }

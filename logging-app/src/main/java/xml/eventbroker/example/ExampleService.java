@@ -36,6 +36,9 @@ public class ExampleService extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+		resp.setContentType("text/html");
+		resp.setStatus(HttpServletResponse.SC_OK);
+
 		PrintWriter writer = resp.getWriter();
 
 		writer.append("<html><body>");
@@ -53,8 +56,6 @@ public class ExampleService extends HttpServlet {
 		writer.append("</body></html>");
 
 		writer.flush();
-
-		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 
 	@Override
@@ -103,7 +104,7 @@ public class ExampleService extends HttpServlet {
 					}
 
 					logger.info("Adding event " + b.toString());
-					
+
 					synchronized (events) {
 						events.add(b.toString());
 					}
@@ -111,17 +112,20 @@ public class ExampleService extends HttpServlet {
 				logger.info("Connection was closed by remote");
 			} catch (SocketTimeoutException e) {
 				logger.log(Level.WARNING, "Connection timed out");
-				HttpServletResponse resp = (HttpServletResponse)cxt.getResponse();
+				HttpServletResponse resp = (HttpServletResponse) cxt
+						.getResponse();
 				resp.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT);
 				resp.getOutputStream().close();
 			} catch (SocketException e) {
 				logger.log(Level.WARNING, "SocketException", e);
-				HttpServletResponse resp = (HttpServletResponse)cxt.getResponse();
+				HttpServletResponse resp = (HttpServletResponse) cxt
+						.getResponse();
 				resp.sendError(HttpServletResponse.SC_EXPECTATION_FAILED);
 				resp.getOutputStream().close();
 			} catch (IOException e) {
 				logger.log(Level.WARNING, "IOException", e);
-				HttpServletResponse resp = (HttpServletResponse)cxt.getResponse();
+				HttpServletResponse resp = (HttpServletResponse) cxt
+						.getResponse();
 				resp.sendError(HttpServletResponse.SC_EXPECTATION_FAILED);
 				resp.getOutputStream().close();
 			} finally {
