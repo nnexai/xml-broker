@@ -1,4 +1,4 @@
-package xml.eventbroker;
+package xml.eventbroker.benchmark;
 
 public class TestStatistics {
 	long sendingTimeInMs = -1;

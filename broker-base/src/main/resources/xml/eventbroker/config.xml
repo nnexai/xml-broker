@@ -2,33 +2,33 @@
 <config>
 	<register>
 		<HTTPConnector event="test" uri="log/test"
-			url='http://localhost:8080/logging-app/XMLEventExample' />
+			url='${container-base-url}/logging-app/XMLEventExample' />
 		<HTTPConnector event="request" uri="log/request"
-			url='http://localhost:8080/logging-app/XMLEventExample' />
+			url='${container-base-url}/logging-app/XMLEventExample' />
 		<HTTPConnector event="callback" uri="log/callback"
-			url='http://localhost:8080/logging-app/XMLEventExample' />
+			url='${container-base-url}/logging-app/XMLEventExample' />
 		<HTTPConnector event="callback" uri="callback"
-			url='http://localhost:8080/callback-app/XMLCallback' />
+			url='${container-base-url}/callback-app/XMLCallback' />
 		<HTTPConnector event="request" uri="echo/request"
-			url='http://localhost:8080/callback-app/SimpleReply' />
+			url='${container-base-url}/callback-app/SimpleReply' />
 		<HTTPConnector event="jython" uri="evaluate/jython"
-			url='http://localhost:8080/callback-app/JythonReply' />
+			url='${container-base-url}/callback-app/JythonReply' />
 		<HTTPConnector event="jython" uri="log/jython"
-			url='http://localhost:8080/logging-app/XMLEventExample' />
+			url='${container-base-url}/logging-app/XMLEventExample' />
 		<XPathFilter event="test" uri="log/filtered/test" filter="@id = 1">
-			<HTTPConnector url='http://localhost:8080/logging-app/XMLEventExample' />
+			<HTTPConnector url='${container-base-url}/logging-app/XMLEventExample' />
 		</XPathFilter>
 		<HTTPConnector event="mail" uri="mail/1"
-			url='http://localhost:8080/shop-apps/Mail' />
+			url='${container-base-url}/shop-apps/Mail' />
 		<HTTPConnector event="transfer" uri="transfer/1"
-			url='http://localhost:8080/shop-apps/Bank' />
+			url='${container-base-url}/shop-apps/Bank' />
 		<HTTPConnector event="shop" uri="/XMLEventExample/1"
-			url='http://localhost:8080/shop-apps/XMLEventExample' />
+			url='${container-base-url}/shop-apps/XMLEventExample' />
 		<HTTPConnector event="parcel" uri="parcel-service/1"
-			url='http://localhost:8080/shop-apps/ParcelService' />
+			url='${container-base-url}/shop-apps/ParcelService' />
 		<HTTPConnector event="alarm" uri="parcel/service/2"
-			url='http://localhost:8080/shop-apps/ParcelService' />
+			url='${container-base-url}/shop-apps/ParcelService' />
 		<HTTPConnector event="alarm-registration" uri="timer-service/1"
-			url='http://localhost:8080/shop-apps/TimerService' />
+			url='${container-base-url}/shop-apps/TimerService' />
 	</register>
 </config>

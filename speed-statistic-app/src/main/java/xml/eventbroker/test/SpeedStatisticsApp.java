@@ -53,7 +53,7 @@ public class SpeedStatisticsApp extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		brokerUrl = getInitParameter("xmlbroker");
+		brokerUrl = getInitParameter("xmlbrokerbenchmark");
 
 		f = XMLInputFactory.newInstance();
 		f.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);

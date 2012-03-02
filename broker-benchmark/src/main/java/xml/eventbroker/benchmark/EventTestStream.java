@@ -1,4 +1,4 @@
-package xml.eventbroker;
+package xml.eventbroker.benchmark;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,12 +1,9 @@
-package xml.eventbroker;
+package xml.eventbroker.benchmark;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,8 +13,11 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.ParserConfigurationException;
 
-import xml.eventbroker.EventTestStream.IEventStreamStatusUpdate;
+import xml.eventbroker.DeliveryStatistics;
+import xml.eventbroker.XMLEventBroker;
+import xml.eventbroker.benchmark.EventTestStream.IEventStreamStatusUpdate;
 import xml.eventbroker.connector.ServiceConnectorFactory;
 
 public class SpeedTest extends HttpServlet {
@@ -100,20 +100,20 @@ public class SpeedTest extends HttpServlet {
 	}
 
 	private void registerServices(String connector, String statisticsURL,
-			DynamicRegistration dynReg, int serviceCount)
+			XMLEventBroker broker, int serviceCount)
 			throws UnsupportedEncodingException {
 		if (serviceCount == 1) {
 			byte[] regEvent = ("<HTTPConnector type=\"" + connector
 					+ "\" event=\"timed-event\" url=\"" + statisticsURL + "/\"/>")
 					.getBytes("UTF-8");
-			dynReg.subscribe(new ByteArrayInputStream(regEvent),
+			broker.subscribe(new ByteArrayInputStream(regEvent),
 					"XMLBroker/speed-test/");
 		} else
 			for (int i = 1; i <= serviceCount; i++) {
 				byte[] regEvent = ("<HTTPConnector type=\"" + connector
 						+ "\" event=\"timed-event" + i + "\" url=\""
 						+ statisticsURL + '/' + i + "\"/>").getBytes("UTF-8");
-				dynReg.subscribe(new ByteArrayInputStream(regEvent),
+				broker.subscribe(new ByteArrayInputStream(regEvent),
 						"XMLBroker/speed-test/" + i);
 			}
 	}
@@ -129,17 +129,7 @@ public class SpeedTest extends HttpServlet {
 			// Initialize the Broker
 			broker.init();
 
-			// Register the speed-statistics-app
-			Field dynRegF = clazz.getDeclaredField("dynReg");
-			dynRegF.setAccessible(true);
-			DynamicRegistration dynReg = (DynamicRegistration) dynRegF
-					.get(broker);
-
-			registerServices(connector, statisticsURL, dynReg, serviceCount);
-
-			Method pM = clazz
-					.getDeclaredMethod("processXML", InputStream.class);
-			pM.setAccessible(true);
+			registerServices(connector, statisticsURL, broker, serviceCount);
 
 			// Get access to the threadpool, so we know when sending has
 			// finished
@@ -179,11 +169,9 @@ public class SpeedTest extends HttpServlet {
 			System.out.println("GC");
 			System.gc();
 			System.out.println("Warmup");
-			pM.invoke(
-					broker,
-					new ByteArrayInputStream(
-							"<?xml version=\"1.0\" encoding=\"UTF-8\"?><warmup/>"
-									.getBytes("UTF-8")));
+			broker.processXML(new ByteArrayInputStream(
+					"<?xml version=\"1.0\" encoding=\"UTF-8\"?><warmup/>"
+							.getBytes("UTF-8")));
 			Thread.sleep(1000);
 
 			// Start
@@ -201,7 +189,7 @@ public class SpeedTest extends HttpServlet {
 					}
 				};
 			}
-			pM.invoke(broker, eventTestStream);
+			broker.processXML(eventTestStream);
 			stats_local.processingTimeInMs = ((System.nanoTime() - start) / 1000000);
 
 			// wait for all pending sends to finish
@@ -216,21 +204,18 @@ public class SpeedTest extends HttpServlet {
 				pool.shutdownNow();
 		} catch (SecurityException e) {
 			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (ServletException e) {
 			e.printStackTrace();
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			running.set(false);

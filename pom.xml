@@ -15,13 +15,19 @@
 		</repository>
 	</repositories>
 
+	<properties>
+		<container-base-url>http://localhost:8080</container-base-url>
+	</properties>
+
 	<modules>
 		<module>shared</module>
+		<module>broker-base</module>
 		<module>broker</module>
 		<module>callback-app</module>
 		<module>client</module>
 		<module>logging-app</module>
 		<module>eventsender-app</module>
+		<module>broker-benchmark</module>
 		<module>speed-statistic-app</module>
 		<module>shop-apps</module>
 	</modules>
@@ -41,6 +47,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
+					<encoding>UTF-8</encoding>
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
@@ -51,6 +58,14 @@
 				<version>2.2</version>
 				<!-- <configuration> <failOnMissingWebXml>false</failOnMissingWebXml> 
 					</configuration> -->
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>

@@ -3,12 +3,12 @@
   <display-name>broker-servlet-web</display-name>
   <servlet>
     <description></description>
-    <display-name>XMLEventBroker</display-name>
-    <servlet-name>XMLEventBroker</servlet-name>
-    <servlet-class>xml.eventbroker.servlet.BrokerServlet</servlet-class>
+    <display-name>XMLEventBrokerSpeedTest</display-name>
+    <servlet-name>XMLEventBrokerSpeedTest</servlet-name>
+    <servlet-class>xml.eventbroker.benchmark.SpeedTest</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>XMLEventBroker</servlet-name>
-    <url-pattern>/XMLEventBroker/*</url-pattern>
+    <servlet-name>XMLEventBrokerSpeedTest</servlet-name>
+    <url-pattern>/SpeedTest</url-pattern>
   </servlet-mapping>
 </web-app>
