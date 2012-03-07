@@ -7,13 +7,18 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Logger;
 
 import xml.eventbroker.DeliveryStatistics;
 
-public class SimpleHTTPDeliverer implements IHTTPDeliverer {
+public class SimpleHTTPDeliverer extends IHTTPDeliverer {
+	public SimpleHTTPDeliverer(ExecutorService pool) {
+		super(pool);
+	}
+
 	private static final Logger logger = Logger.getAnonymousLogger();
-	
+
 	@Override
 	public void deliver(String event, URI urlString) throws IOException {
 		URL url = urlString.toURL();
@@ -29,19 +34,19 @@ public class SimpleHTTPDeliverer implements IHTTPDeliverer {
 		OutputStream out = con.getOutputStream();
 		BufferedOutputStream bos = new BufferedOutputStream(out);
 		OutputStreamWriter writer = new OutputStreamWriter(bos, "UTF-8");
-		
+
 		writer.append(event);
 		writer.flush();
 		writer.close();
-		
+
 		stats.finishedDelivery();
-		
+
 		con.getInputStream();
 		int rCode;
-		if( (rCode = con.getResponseCode()) != HttpURLConnection.HTTP_OK)
-			logger.warning("Service answered: "+rCode);
+		if ((rCode = con.getResponseCode()) != HttpURLConnection.HTTP_OK)
+			logger.warning("Service answered: " + rCode);
 	}
-	
+
 	DeliveryStatistics stats;
 
 	@Override
@@ -50,7 +55,7 @@ public class SimpleHTTPDeliverer implements IHTTPDeliverer {
 	}
 
 	@Override
-	public void shutdown() {		
+	public void shutdown() {
 	}
 
 	@Override

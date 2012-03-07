@@ -9,13 +9,18 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import sun.net.www.protocol.http.HttpURLConnection;
 import xml.eventbroker.DeliveryStatistics;
 
-public class StreamingHTTPDeliverer implements IHTTPDeliverer {
+public class StreamingHTTPDeliverer extends IHTTPDeliverer {
+
+	public StreamingHTTPDeliverer(ExecutorService pool) {
+		super(pool);
+	}
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 
@@ -31,8 +36,8 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 		}
 
 		private void connect() throws IOException {
-			logger.info("Connecting to "+url.toString());
-			
+			logger.info("Connecting to " + url.toString());
+
 			con = (HttpURLConnection) url.openConnection();
 
 			con.setRequestMethod("POST");
@@ -42,11 +47,11 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 			con.setUseCaches(false);
 			// needed, so that the sockets buffer is not reused!
 			con.setRequestProperty("CONNECTION", "close");
-			// logging service should be set to timeout after ~20 seconds.. 
+			// logging service should be set to timeout after ~20 seconds..
 			con.setConnectTimeout(2 * 1000); // 2 Seconds
-			con.setReadTimeout(30*60*1000); // 30 Minutes for reading Answer
+			con.setReadTimeout(30 * 60 * 1000); // 30 Minutes for reading Answer
 			con.setRequestProperty("CONTENT-TYPE", "text/xml");
-			
+
 			OutputStream out = con.getOutputStream();
 			BufferedOutputStream bos = new BufferedOutputStream(out);
 			writer = new OutputStreamWriter(bos, "UTF-8");
@@ -85,7 +90,7 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 
 	Map<URI, PersistentConnection> map;
 	DeliveryStatistics stats;
-	
+
 	@Override
 	public void init(DeliveryStatistics stats) {
 		this.stats = stats;
@@ -104,7 +109,7 @@ public class StreamingHTTPDeliverer implements IHTTPDeliverer {
 			}
 		}
 	}
-	
+
 	@Override
 	public void deliver(String event, URI urlString) throws IOException {
 		PersistentConnection con;

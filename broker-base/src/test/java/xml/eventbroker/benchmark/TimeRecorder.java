@@ -2,11 +2,11 @@ package xml.eventbroker.benchmark;
 
 public class TimeRecorder {
 
-	private static final int DISCONNECT_STREAMING = 9;
+	private static final int DISCONNECT_STREAMING = 155;
 	private static final int SEND_STREAMING = 1;
-	private static final int CONNECT_AND_SEND_ONCE = 6;
-	private static final int CONNECT_STREAMING = 9;
-	private static final double SCALE = 0.025;
+	private static final int CONNECT_AND_SEND_ONCE = 205;
+	private static final int CONNECT_STREAMING = 150;
+	private static final double SCALE = 0.044;
 
 	long totalDuration = 0;
 	private int streamConnectCount;

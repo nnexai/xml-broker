@@ -35,7 +35,7 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 
 import xml.eventbroker.DeliveryStatistics;
 
-public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
+public class NettyStreamingHTTPDeliverer extends IHTTPDeliverer {
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 
@@ -137,6 +137,7 @@ public class NettyStreamingHTTPDeliverer implements IHTTPDeliverer {
 	DeliveryStatistics stats;
 
 	public NettyStreamingHTTPDeliverer(ExecutorService pool) {
+		super(pool);
 		bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
 				Executors.newCachedThreadPool(),
 				Executors.newCachedThreadPool()));

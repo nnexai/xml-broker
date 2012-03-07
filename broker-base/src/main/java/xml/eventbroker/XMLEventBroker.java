@@ -97,13 +97,16 @@ public class XMLEventBroker {
 							}
 							ev = domdescr;
 						}
-						EventDeliveryTask task = new EventDeliveryTask(ev,
-								service);
+						// EventDeliveryTask task = new EventDeliveryTask(ev,
+						// service);
+						// pool.execute(task);
 						stats.addDelivery();
-						pool.execute(task);
+						service.deliver(ev);
 
 					} catch (SAXException e) {
 						logger.log(Level.WARNING, "Unable to generate DOM", e);
+					} catch (IOException e) {
+						logger.log(Level.WARNING, "Could not deliver Event", e);
 					}
 				}
 

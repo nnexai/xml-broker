@@ -17,10 +17,10 @@ public class PoolBenchmark {
 
 	public static void main(String[] args) {
 		int messageCount = 1000000;
-		int connectionCount = 5000;
+		int connectionCount = 500;
 		int maxPersistentConnections = 299;
 
-		Pattern pattern = new RandomPattern();
+		Pattern pattern = new BurstPattern();
 		System.out.println("Used Pattern example: " + pattern);
 
 		Strategy strat = new LRUStrategy(maxPersistentConnections);

@@ -34,7 +34,7 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 
 import xml.eventbroker.DeliveryStatistics;
 
-public class NettyStreamingHTTPDeliverer_orig implements IHTTPDeliverer {
+public class NettyStreamingHTTPDeliverer_orig extends IHTTPDeliverer {
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 
@@ -120,7 +120,7 @@ public class NettyStreamingHTTPDeliverer_orig implements IHTTPDeliverer {
 						return;
 					if (!result.isSuccess()) {
 						System.out.println("E");
-					} 
+					}
 					stats.finishedDelivery();
 				}
 			});
@@ -147,8 +147,9 @@ public class NettyStreamingHTTPDeliverer_orig implements IHTTPDeliverer {
 	final ClientBootstrap bootstrap;
 
 	DeliveryStatistics stats;
-	
+
 	public NettyStreamingHTTPDeliverer_orig(ExecutorService pool) {
+		super(pool);
 		// TODO Auto-generated constructor stub
 		bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
 				Executors.newCachedThreadPool(), pool));
