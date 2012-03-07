@@ -12,7 +12,7 @@ public class MultiXMLRootFilter extends FilterReader {
 		PARSING, ERROR, TAG_OPEN, COMMENT_INTRO_1, COMMENT_INTRO_2, COMMENT, COMMENT_OUTRO_1, COMMENT_OUTRO_2, INSTRUCTION, INSTRUCTION_OUTRO, ELEMENT, ATTRIB_VALUE_DOUBLE_QUOTE, ELEMENT_CLOSING, ELEMENT_SINGLE_TAG, CDATA_INTRO_1, CDATA, CDATA_OUTRO_2, CDATA_OUTRO_1, ATTRIB_VALUE_SINGLE_QUOTE, ELEMENT_NAME
 	}
 
-	private char[] buf;
+	private final char[] buf;
 	private int level = 0;
 
 	private int pendingBytes = 0;
@@ -117,7 +117,7 @@ public class MultiXMLRootFilter extends FilterReader {
 		} else {
 			// nothing pending so read some new
 			try {
-				r = super.read(buf, 0, len);
+				r = super.read(buf, 0, Math.min(len, buf.length));
 			} catch (IOException e) {
 				this.finished = true;
 				throw e;

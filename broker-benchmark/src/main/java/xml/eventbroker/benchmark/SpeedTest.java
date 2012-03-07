@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -23,6 +24,8 @@ import xml.eventbroker.connector.ServiceConnectorFactory;
 public class SpeedTest extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
+
+	private static final Logger LOG = Logger.getAnonymousLogger();
 
 	AtomicBoolean running = new AtomicBoolean(false);
 
@@ -166,9 +169,9 @@ public class SpeedTest extends HttpServlet {
 				}
 			};
 			// TODO: WARMUP HERE
-			System.out.println("GC");
+			LOG.info("GC");
 			System.gc();
-			System.out.println("Warmup");
+			LOG.info("Warmup");
 			broker.processXML(new ByteArrayInputStream(
 					"<?xml version=\"1.0\" encoding=\"UTF-8\"?><warmup/>"
 							.getBytes("UTF-8")));
@@ -193,9 +196,9 @@ public class SpeedTest extends HttpServlet {
 			stats_local.processingTimeInMs = ((System.nanoTime() - start) / 1000000);
 
 			// wait for all pending sends to finish
-			System.out.println("Waiting");
+			LOG.info("Waiting");
 			delivStats.waitForPendingDeliveries();
-			System.out.println("Finished");
+			LOG.info("Finished");
 			stats_local.sendingTimeInMs = ((System.nanoTime() - start) / 1000000);
 
 			factory.shutdown();

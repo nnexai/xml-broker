@@ -15,7 +15,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import xml.eventbroker.EventParser;
 import xml.eventbroker.connector.AbstractServiceEntry;
 import xml.eventbroker.connector.DOMEventDescription;
 import xml.eventbroker.connector.ServiceConnectorFactory;
@@ -109,8 +108,8 @@ public class XMLEventBroker {
 				}
 
 				// wait if sending-queue is to long
-				if (WAIT_FOR_DELIVERY && stats.counter.get() > 10000)
-					while (stats.counter.get() > 0) {
+				if (WAIT_FOR_DELIVERY && stats.counter.get() > 1000)
+					while (stats.counter.get() > 1) {
 						try {
 							Thread.sleep(50);
 						} catch (InterruptedException e) {
@@ -119,7 +118,11 @@ public class XMLEventBroker {
 			}
 		};
 
+		// Add a fake delivery s.th. stats.waitForPendingDeliveries does not
+		// return before every Msg has been touched at least once
+		stats.addDelivery();
 		evP.parseStream(in);
+		stats.finishedDelivery();
 
 		try {
 			in.close();

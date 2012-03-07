@@ -16,7 +16,7 @@ public class DeliveryStatistics {
 				lock.notifyAll();
 			}
 	}
-	
+
 	public int getPendingDeliveryCount() {
 		return counter.get();
 	}
