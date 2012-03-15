@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 import xml.eventbroker.DeliveryStatistics;
 
-public class SimpleHTTPDeliverer extends IHTTPDeliverer {
+public class SimpleHTTPDeliverer extends AbstractHTTPDeliverer {
 	public SimpleHTTPDeliverer(ExecutorService pool) {
 		super(pool);
 	}

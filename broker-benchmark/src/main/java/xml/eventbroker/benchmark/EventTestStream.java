@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.Scanner;
+
+import xml.eventbroker.shared.MultiXMLRootFilter;
 
 public class EventTestStream extends InputStream {
 
@@ -138,18 +141,56 @@ public class EventTestStream extends InputStream {
 	}
 
 	public static void main(String[] args) {
-		InputStreamReader isr = new InputStreamReader(new EventTestStream(10,
-				null));
-		StringBuilder str = new StringBuilder(0x1000);
-		char[] buf = new char[100];
+		MultiXMLRootFilter isr = new MultiXMLRootFilter(new InputStreamReader(
+				new EventTestStream(1000001, new IEventStreamStatusUpdate() {
+
+					@Override
+					public void updateProgress(int currentEventNo,
+							int maxEventNo, double percentage) {
+
+					}
+
+					@Override
+					public void signalThroughputNotAchieved(int currentEventNo,
+							int sendPerWait, int desiredEventsPerSecond,
+							double achievedEventsPerSecond) {
+
+					}
+				})), 1000);
+		char[] buf = new char[1000];
 		int read;
+		long cnt = 0;
+
+		Scanner sc = new Scanner(System.in);
+		// Wait for Enter
+		System.out.println("Press Enter to Warmup");
+		sc.nextLine();
+
 		try {
-			while ((read = isr.read(buf)) > -1) {
-				str.append(buf, 0, read);
+			// First read to allow benchmark tools to instrument classes
+			if (isr.hasNext()) {
+				while ((read = isr.read(buf)) > 0) {
+				}
 			}
-			System.out.println(str.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		System.out.println("Warmup complete. Press Enter to run benchmark");
+		sc.nextLine();
+
+		long time = System.currentTimeMillis();
+
+		try {
+			while (isr.hasNext()) {
+				while ((read = isr.read(buf)) > 0) {
+				}
+				cnt++;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println(cnt + " in "
+				+ (System.currentTimeMillis() - time + "ms"));
 	}
 }

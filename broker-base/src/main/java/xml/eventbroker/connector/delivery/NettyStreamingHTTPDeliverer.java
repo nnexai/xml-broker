@@ -35,14 +35,16 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 
 import xml.eventbroker.DeliveryStatistics;
 
-public class NettyStreamingHTTPDeliverer extends IHTTPDeliverer {
+public class NettyStreamingHTTPDeliverer extends AbstractHTTPDeliverer {
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 
-	class PersistentConnection {
+	protected static class PersistentConnection {
 
 		private Channel connection;
 		private final URI url;
+		final ClientBootstrap bootstrap;
+		final DeliveryStatistics stats;
 
 		private final AtomicBoolean connected = new AtomicBoolean(false);
 
@@ -88,8 +90,11 @@ public class NettyStreamingHTTPDeliverer extends IHTTPDeliverer {
 			}
 		}
 
-		public PersistentConnection(URI url) throws IOException {
+		public PersistentConnection(URI url, ClientBootstrap bootstrap,
+				DeliveryStatistics stats) throws IOException {
 			this.url = url;
+			this.bootstrap = bootstrap;
+			this.stats = stats;
 		}
 
 		public void pushEvent(final String event) throws IOException {
@@ -176,7 +181,7 @@ public class NettyStreamingHTTPDeliverer extends IHTTPDeliverer {
 	public void deliver(String event, URI urlString) throws IOException {
 		PersistentConnection con;
 		if ((con = map.get(urlString)) == null) {
-			con = new PersistentConnection(urlString);
+			con = new PersistentConnection(urlString, bootstrap, stats);
 			PersistentConnection cached = map.putIfAbsent(urlString, con);
 			if (cached != null)
 				con = cached;

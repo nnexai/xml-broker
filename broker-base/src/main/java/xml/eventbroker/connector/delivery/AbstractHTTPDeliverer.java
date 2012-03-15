@@ -6,10 +6,10 @@ import java.util.concurrent.ExecutorService;
 
 import xml.eventbroker.DeliveryStatistics;
 
-public abstract class IHTTPDeliverer {
+public abstract class AbstractHTTPDeliverer {
 	private final ExecutorService pool;
 
-	public IHTTPDeliverer(ExecutorService pool) {
+	public AbstractHTTPDeliverer(ExecutorService pool) {
 		this.pool = pool;
 	}
 

@@ -111,7 +111,7 @@ public class XMLEventBroker {
 				}
 
 				// wait if sending-queue is to long
-				if (WAIT_FOR_DELIVERY && stats.counter.get() > 1000)
+				if (WAIT_FOR_DELIVERY && stats.counter.get() > 6000)
 					while (stats.counter.get() > 1) {
 						try {
 							Thread.sleep(50);

@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 import sun.net.www.protocol.http.HttpURLConnection;
 import xml.eventbroker.DeliveryStatistics;
 
-public class StreamingHTTPDeliverer extends IHTTPDeliverer {
+public class StreamingHTTPDeliverer extends AbstractHTTPDeliverer {
 
 	public StreamingHTTPDeliverer(ExecutorService pool) {
 		super(pool);

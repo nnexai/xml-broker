@@ -6,11 +6,11 @@ import java.net.URISyntaxException;
 
 import org.w3c.dom.Element;
 
-import xml.eventbroker.connector.delivery.IHTTPDeliverer;
+import xml.eventbroker.connector.delivery.AbstractHTTPDeliverer;
 
 public class HTTPConnector extends AbstractServiceEntry {
 	private final URI url;
-	private final IHTTPDeliverer deliverer;
+	private final AbstractHTTPDeliverer deliverer;
 
 	public HTTPConnector(String event, String uri, String url, String type,
 			IEventConnectorFactory fac) throws URISyntaxException {

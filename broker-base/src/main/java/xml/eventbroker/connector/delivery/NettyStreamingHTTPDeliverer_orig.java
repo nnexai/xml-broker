@@ -34,7 +34,7 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 
 import xml.eventbroker.DeliveryStatistics;
 
-public class NettyStreamingHTTPDeliverer_orig extends IHTTPDeliverer {
+public class NettyStreamingHTTPDeliverer_orig extends AbstractHTTPDeliverer {
 
 	private static final Logger logger = Logger.getAnonymousLogger();
 

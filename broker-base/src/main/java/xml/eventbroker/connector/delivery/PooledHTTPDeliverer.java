@@ -18,7 +18,7 @@ import org.apache.http.util.EntityUtils;
 
 import xml.eventbroker.DeliveryStatistics;
 
-public class PooledHTTPDeliverer extends IHTTPDeliverer {
+public class PooledHTTPDeliverer extends AbstractHTTPDeliverer {
 	public PooledHTTPDeliverer(ExecutorService pool) {
 		super(pool);
 	}

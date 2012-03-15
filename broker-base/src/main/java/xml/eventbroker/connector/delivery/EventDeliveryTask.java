@@ -12,9 +12,9 @@ public class EventDeliveryTask implements Runnable {
 
 	private final String event;
 	private final URI uri;
-	private final IHTTPDeliverer deliverer;
+	private final AbstractHTTPDeliverer deliverer;
 
-	public EventDeliveryTask(String event, URI uri, IHTTPDeliverer deliverer) {
+	public EventDeliveryTask(String event, URI uri, AbstractHTTPDeliverer deliverer) {
 		this.event = event;
 		this.uri = uri;
 		this.deliverer = deliverer;

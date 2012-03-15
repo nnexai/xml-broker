@@ -175,10 +175,10 @@ public class MultiXMLRootFilter extends FilterReader {
 		return currentRootName.toString();
 	}
 
-	private void parse(int r, int i) {
-		ParserStatus old = status;
-
+	private final void parse(final int r, final int i) {
+		final ParserStatus old = status;
 		final char c = buf[i];
+
 		switch (status) {
 
 		case ERROR:

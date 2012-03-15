@@ -22,7 +22,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import xml.eventbroker.DeliveryStatistics;
-import xml.eventbroker.connector.delivery.IHTTPDeliverer;
+import xml.eventbroker.connector.delivery.AbstractHTTPDeliverer;
+import xml.eventbroker.connector.delivery.BufferedNettyStreamingHTTPDeliverer;
 import xml.eventbroker.connector.delivery.NettyStreamingHTTPDeliverer;
 import xml.eventbroker.connector.delivery.PooledHTTPDeliverer;
 import xml.eventbroker.connector.delivery.SimpleHTTPDeliverer;
@@ -31,7 +32,7 @@ import xml.eventbroker.connector.delivery.StreamingHTTPDeliverer;
 public class ServiceConnectorFactory implements IEventConnectorFactory {
 	private static final Logger logger = Logger.getAnonymousLogger();
 
-	Map<String, IHTTPDeliverer> m;
+	Map<String, AbstractHTTPDeliverer> m;
 
 	private final ExecutorService pool;
 	private final DeliveryStatistics stats;
@@ -40,12 +41,12 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 			DeliveryStatistics stats) {
 		this.pool = pool;
 		this.stats = stats;
-		m = new HashMap<String, IHTTPDeliverer>();
+		m = new HashMap<String, AbstractHTTPDeliverer>();
 	}
 
 	public void init() {
 
-		IHTTPDeliverer d;
+		AbstractHTTPDeliverer d;
 
 		// TODO: Find solution for hardcoding these entries (and their "get"
 		// counterpart"
@@ -65,10 +66,14 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 		d.init(stats);
 		m.put(d.getClass().getSimpleName(), d);
 
+		d = new BufferedNettyStreamingHTTPDeliverer(pool);
+		d.init(stats);
+		m.put(d.getClass().getSimpleName(), d);
+
 	}
 
 	public void shutdown() {
-		for (IHTTPDeliverer del : m.values()) {
+		for (AbstractHTTPDeliverer del : m.values()) {
 			del.shutdown();
 		}
 	}
@@ -157,8 +162,8 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 	}
 
 	@Override
-	public IHTTPDeliverer getHTTPDeliverer(String type) {
-		IHTTPDeliverer deliverer = m.get(type);
+	public AbstractHTTPDeliverer getHTTPDeliverer(String type) {
+		AbstractHTTPDeliverer deliverer = m.get(type);
 		if (deliverer == null)
 			deliverer = m.get(SimpleHTTPDeliverer.class.getSimpleName());
 		return deliverer;
