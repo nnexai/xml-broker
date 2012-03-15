@@ -24,6 +24,8 @@ import org.w3c.dom.Node;
 import xml.eventbroker.DeliveryStatistics;
 import xml.eventbroker.connector.delivery.AbstractHTTPDeliverer;
 import xml.eventbroker.connector.delivery.BufferedNettyStreamingHTTPDeliverer;
+import xml.eventbroker.connector.delivery.BufferedNettyStreamingHTTPDeliverer2;
+import xml.eventbroker.connector.delivery.BufferedNettyStreamingHTTPDeliverer3;
 import xml.eventbroker.connector.delivery.NettyStreamingHTTPDeliverer;
 import xml.eventbroker.connector.delivery.PooledHTTPDeliverer;
 import xml.eventbroker.connector.delivery.SimpleHTTPDeliverer;
@@ -67,6 +69,14 @@ public class ServiceConnectorFactory implements IEventConnectorFactory {
 		m.put(d.getClass().getSimpleName(), d);
 
 		d = new BufferedNettyStreamingHTTPDeliverer(pool);
+		d.init(stats);
+		m.put(d.getClass().getSimpleName(), d);
+
+		d = new BufferedNettyStreamingHTTPDeliverer2(pool);
+		d.init(stats);
+		m.put(d.getClass().getSimpleName(), d);
+
+		d = new BufferedNettyStreamingHTTPDeliverer3(pool);
 		d.init(stats);
 		m.put(d.getClass().getSimpleName(), d);
 
